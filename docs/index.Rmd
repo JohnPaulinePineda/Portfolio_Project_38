@@ -1,0 +1,284 @@
+---
+title: 'Supervised Learning : Exploring Boosting, Bagging and Stacking Algorithms for Ensemble Learning'
+author: "John Pauline Pineda"
+date: "August 19, 2023"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    theme: readable
+    highlight: tango
+    css: doc.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
+```
+
+# **1. Table of Contents**
+|
+| Details.
+|
+| Details.
+|
+##  1.1 Sample Data
+|
+|
+| Preliminary dataset assessment:
+|
+| 
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.1, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+##  1.2 Data Quality Assessment
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.2, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+##  1.3 Data Preprocessing
+
+###  1.3.1 Outlier Detection
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.3.1.1, warning=FALSE, message=FALSE}
+
+```
+
+```{r section_1.3.1.2, warning=FALSE, message=FALSE, fig.width=15, fig.height=2}
+
+```
+
+</details>
+
+###  1.3.2 Zero and Near-Zero Variance
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.3.2, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+###  1.3.3 Collinearity
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.3.3, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+###  1.3.4 Linear Dependency
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.3.4, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+###  1.3.5 Distributional Shape
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.3.5, warning=FALSE, message=FALSE, fig.width=15, fig.height=2}
+
+```
+
+</details>
+
+## 1.4 Data Exploration
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.4, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+## 1.5 Model Boosting
+
+###  1.5.1 Boosting Model 1
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.5.1, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+###  1.5.2 Boosting Model 2
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.5.2, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+###  1.5.3 Boosting Model 3
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.5.3, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+## 1.6 Model Bagging
+
+###  1.6.1 Bagging Model 1
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.6.1, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+###  1.6.2 Boosting Model 2
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.6.2, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+## 1.7 Model Stacking
+
+###  1.7.1 Stacking Model 1
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.1, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+##  1.8 Algorithm Comparison Summary
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.8, warning=FALSE, message=FALSE, dev='png'}
+
+```
+
+</details>
+
+|
+# **2. References**
+|
+| **[Book]** [Applied Predictive Modeling](http://appliedpredictivemodeling.com/) by Max Kuhn and Kjell Johnson
+| **[Book]** [An Introduction to Statistical Learning](https://www.statlearning.com/) by Gareth James, Daniela Witten, Trevor Hastie and Rob Tibshirani
+| **[Book]** [Multivariate Data Visualization with R](http://lmdvr.r-forge.r-project.org/figures/figures.html) by Deepayan Sarkar
+| **[Book]** [Machine Learning](https://bookdown.org/ssjackson300/Machine-Learning-Lecture-Notes/) by Samuel Jackson
+| **[Book]** [Data Modeling Methods](https://bookdown.org/larget_jacob/data-modeling-methods/) by Jacob Larget
+| **[Book]** [Introduction to R and Statistics](https://saestatsteaching.tech/) by University of Western Australia
+| **[Book]** [Feature Engineering and Selection: A Practical Approach for Predictive Models](http://www.feat.engineering/index.html) by Max Kuhn and Kjell Johnson
+| **[Book]** [Introduction to Research Methods](https://bookdown.org/ejvanholm/Textbook/) by Eric van Holm
+| **[R Package]** [AppliedPredictiveModeling](https://cran.r-project.org/web//packages/AppliedPredictiveModeling/AppliedPredictiveModeling.pdf) by Max Kuhn
+| **[R Package]** [caret](https://topepo.github.io/caret/index.html) by Max Kuhn
+| **[R Package]** [rpart](https://mran.microsoft.com/web/packages/rpart/rpart.pdf) by Terry Therneau and Beth Atkinson
+| **[R Package]** [lattice](https://cran.r-project.org/web/packages/lattice/lattice.pdf) by  Deepayan Sarkar
+| **[R Package]** [dplyr](https://cran.r-project.org/web/packages/dplyr/index.html/) by Hadley Wickham
+| **[R Package]** [tidyr](https://cran.r-project.org/web/packages/tidyr/tidyr.pdf) by Hadley Wickham
+| **[R Package]** [moments](https://cran.r-project.org/web/packages/moments/index.html) by Lukasz Komsta and Frederick
+| **[R Package]** [skimr](https://cran.r-project.org/web/packages/skimr/skimr.pdf) by  Elin Waring
+| **[R Package]** [RANN](https://cran.r-project.org/web/packages/RANN/RANN.pdf) by  Sunil Arya, David Mount, Samuel Kemp and Gregory Jefferis
+| **[R Package]** [corrplot](https://cran.r-project.org/web/packages/corrplot/corrplot.pdf) by Taiyun Wei
+| **[R Package]** [tidyverse](https://cran.r-project.org/web/packages/tidyverse/tidyverse.pdf) by Hadley Wickham
+| **[R Package]** [lares](https://cran.rstudio.com/web/packages/lares/lares.pdf) by Bernardo Lares
+| **[R Package]** [DMwR](https://mran.microsoft.com/snapshot/2016-05-02/web/packages/DMwR/DMwR.pdf) by Luis Torgo
+| **[R Package]** [gridExtra](https://cran.r-project.org/web/packages/gridExtra/gridExtra.pdf) by Baptiste Auguie and Anton Antonov
+| **[R Package]** [rattle](https://cran.r-project.org/web/packages/rattle/rattle.pdf) by Graham Williams
+| **[R Package]** [RColorBrewer](https://cran.r-project.org/web//packages/RColorBrewer/RColorBrewer.pdf) by Erich Neuwirth
+| **[R Package]** [stats](https://search.r-project.org/R/refmans/stats/html/00Index.html) by R Core Team
+
+| **[R Package]** [caretEnsemble](https://cran.r-project.org/web/packages/caretEnsemble/caretEnsemble.pdf) by Zachary Deane-Mayer
+| **[Article]** [A Brief Introduction to caretEnsemble)](https://cran.r-project.org/web/packages/caretEnsemble/vignettes/caretEnsemble-intro.html) by Zachary Deane-Mayer
+| **[Article]** [How to Build an Ensemble Of Machine Learning Algorithms in R](https://machinelearningmastery.com/machine-learning-ensembles-with-r/) by Jason Brownlee
+| **[Publication]** [Ensemble Selection from Libraries of Models](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.60.2859&rep=rep1&type=pdf) by Rich Caruana, Alexandru Niculescu-Mizil, Geoff Crew and Alex Ksikes (Proceedings of the 21 st International Conference on Machine Learning,)
+| **[Course]** [Applied Data Mining and Statistical Learning](https://online.stat.psu.edu/stat508/) by Penn State Eberly College of Science
+|
+|
+|
+|
