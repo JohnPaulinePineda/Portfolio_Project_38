@@ -497,6 +497,68 @@ if ((nrow(DPA_LowVariance[DPA_LowVariance$nzv,]))==0){
 
 ```{r section_1.3.3, warning=FALSE, message=FALSE}
 
+##################################
+# Visualizing pairwise correlation between Predictor
+##################################
+(DPA_Correlation <- cor(DPA.Predictors.Numeric,
+                        method = "pearson",
+                        use="pairwise.complete.obs"))
+
+DPA_CorrelationTest <- cor.mtest(DPA.Predictors.Numeric,
+                       method = "pearson",
+                       conf.level = 0.95)
+
+corrplot(cor(DPA.Predictors.Numeric,
+             method = "pearson",
+             use="pairwise.complete.obs"),
+             method = "circle",
+             type = "upper",
+             order = "original",
+             tl.col = "black",
+             tl.cex = 0.75,
+             tl.srt = 90,
+             sig.level = 0.05,
+             p.mat = DPA_CorrelationTest$p,
+             insig = "blank")
+
+corrplot(cor(DPA.Predictors.Numeric,
+             method = "pearson",
+             use="pairwise.complete.obs"),
+             method = "number",
+             type = "upper",
+             order = "original",
+             tl.col = "black",
+             tl.cex = 0.75,
+             tl.srt = 90,
+             sig.level = 0.05,
+             number.cex = 0.65,
+             p.mat = DPA_CorrelationTest$p,
+             insig = "blank")
+
+##################################
+# Identifying the highly correlated variables
+##################################
+(DPA_HighlyCorrelatedCount <- sum(abs(DPA_Correlation[upper.tri(DPA_Correlation)])>0.95))
+
+if (DPA_HighlyCorrelatedCount > 0) {
+  DPA_HighlyCorrelated <- findCorrelation(DPA_Correlation, cutoff = 0.95)
+
+  (DPA_HighlyCorrelatedForRemoval <- length(DPA_HighlyCorrelated))
+
+  print(paste0("High correlation can be resolved by removing ",
+               (DPA_HighlyCorrelatedForRemoval),
+               " numeric variable(s)."))
+
+  for (j in 1:DPA_HighlyCorrelatedForRemoval) {
+  DPA_HighlyCorrelatedRemovedVariable <- colnames(DPA.Predictors.Numeric)[DPA_HighlyCorrelated[j]]
+  print(paste0("Variable ",
+               j,
+               " for removal: ",
+               DPA_HighlyCorrelatedRemovedVariable))
+  }
+
+}
+
 ```
 
 </details>
@@ -511,6 +573,63 @@ if ((nrow(DPA_LowVariance[DPA_LowVariance$nzv,]))==0){
 
 ```{r section_1.3.4, warning=FALSE, message=FALSE}
 
+##################################
+# Linear Dependencies
+##################################
+
+##################################
+# Finding linear dependencies
+##################################
+DPA_LinearlyDependent <- findLinearCombos(DPA.Predictors.Numeric)
+
+##################################
+# Identifying the linearly dependent variables
+##################################
+DPA_LinearlyDependent <- findLinearCombos(DPA.Predictors.Numeric)
+
+(DPA_LinearlyDependentCount <- length(DPA_LinearlyDependent$linearCombos))
+
+if (DPA_LinearlyDependentCount == 0) {
+  print("No linearly dependent predictors noted.")
+} else {
+  print(paste0("Linear dependency observed for ",
+               (DPA_LinearlyDependentCount),
+               " subset(s) of numeric variable(s)."))
+  
+  for (i in 1:DPA_LinearlyDependentCount) {
+    DPA_LinearlyDependentSubset <- colnames(DPA.Predictors.Numeric)[DPA_LinearlyDependent$linearCombos[[i]]]
+    print(paste0("Linear dependent variable(s) for subset ",
+                 i,
+                 " include: ",
+                 DPA_LinearlyDependentSubset))
+  }
+  
+}
+
+##################################
+# Identifying the linearly dependent variables for removal
+##################################
+
+if (DPA_LinearlyDependentCount > 0) {
+  DPA_LinearlyDependent <- findLinearCombos(DPA.Predictors.Numeric)
+  
+  DPA_LinearlyDependentForRemoval <- length(DPA_LinearlyDependent$remove)
+  
+  print(paste0("Linear dependency can be resolved by removing ",
+               (DPA_LinearlyDependentForRemoval),
+               " numeric variable(s)."))
+  
+  for (j in 1:DPA_LinearlyDependentForRemoval) {
+  DPA_LinearlyDependentRemovedVariable <- colnames(DPA.Predictors.Numeric)[DPA_LinearlyDependent$remove[j]]
+  print(paste0("Variable ",
+               j,
+               " for removal: ",
+               DPA_LinearlyDependentRemovedVariable))
+  }
+
+}
+
+
 ```
 
 </details>
@@ -524,6 +643,34 @@ if ((nrow(DPA_LowVariance[DPA_LowVariance$nzv,]))==0){
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.3.5, warning=FALSE, message=FALSE, fig.width=15, fig.height=2}
+
+##################################
+# Distributional Shape
+##################################
+
+##################################
+# Formulating the histogram
+# for the numeric Predictors
+##################################
+for (i in 1:ncol(DPA.Predictors.Numeric)) {
+  Median <- format(round(median(DPA.Predictors.Numeric[,i],na.rm = TRUE),2), nsmall=2)
+  Mean <- format(round(mean(DPA.Predictors.Numeric[,i],na.rm = TRUE),2), nsmall=2)
+  Skewness <- format(round(skewness(DPA.Predictors.Numeric[,i],na.rm = TRUE),2), nsmall=2)
+  print(
+  ggplot(DPA.Predictors.Numeric, aes(x=DPA.Predictors.Numeric[,i])) +
+  geom_histogram(binwidth=1,color="black", fill="white") +
+  geom_vline(aes(xintercept=mean(DPA.Predictors.Numeric[,i])),
+            color="blue", size=1) +
+    geom_vline(aes(xintercept=median(DPA.Predictors.Numeric[,i])),
+            color="red", size=1) +
+  theme_bw() +
+  ylab("Count") +
+  xlab(names(DPA.Predictors.Numeric)[i]) +
+  labs(title=names(DPA.Predictors.Numeric)[i],
+       subtitle=paste0("Median = ", Median,
+                       ", Mean = ", Mean,
+                       ", Skewness = ", Skewness)))
+}
 
 ```
 
