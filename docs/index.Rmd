@@ -276,7 +276,13 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
 | **[R Package]** [caretEnsemble](https://cran.r-project.org/web/packages/caretEnsemble/caretEnsemble.pdf) by Zachary Deane-Mayer
 | **[Article]** [A Brief Introduction to caretEnsemble)](https://cran.r-project.org/web/packages/caretEnsemble/vignettes/caretEnsemble-intro.html) by Zachary Deane-Mayer
 | **[Article]** [How to Build an Ensemble Of Machine Learning Algorithms in R](https://machinelearningmastery.com/machine-learning-ensembles-with-r/) by Jason Brownlee
-| **[Publication]** [Ensemble Selection from Libraries of Models](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.60.2859&rep=rep1&type=pdf) by Rich Caruana, Alexandru Niculescu-Mizil, Geoff Crew and Alex Ksikes (Proceedings of the 21 st International Conference on Machine Learning,)
+| **[Article]** [Ensemble Learning: Bagging, Boosting, and Stacking](https://towardsai.net/p/machine-learning/ensemble-learning-bagging-boosting-and-stacking) by Towards AI Team
+| **[Article]** [Bagging, Boosting, and Stacking in Machine Learning](https://www.baeldung.com/cs/bagging-boosting-stacking-ml-ensemble-models) by Emmanuella Budu
+| **[Article]** [Stacking Ensemble Machine Learning With Python](https://machinelearningmastery.com/stacking-ensemble-machine-learning-with-python/) by Jason Brownlee
+| **[Article]** [Essence of Boosting Ensembles for Machine Learning](https://machinelearningmastery.com/essence-of-boosting-ensembles-for-machine-learning/) by Jason Brownlee
+| **[Article]** [Ensemble Modeling with R](https://www.pluralsight.com/guides/ensemble-modeling-with-r) by Deepika Singh
+| **[Article]** [Creating Ensemble Models in R](https://dustinrogers.github.io/Ensemble-Models/) by Dustin Rogers
+| **[Publication]** [Ensemble Selection from Libraries of Models](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.60.2859&rep=rep1&type=pdf) by Rich Caruana, Alexandru Niculescu-Mizil, Geoff Crew and Alex Ksikes (Proceedings of the 21 st International Conference on Machine Learning,)
 | **[Course]** [Applied Data Mining and Statistical Learning](https://online.stat.psu.edu/stat508/) by Penn State Eberly College of Science
 |
 |
