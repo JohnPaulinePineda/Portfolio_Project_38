@@ -23,14 +23,106 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
 |
 ##  1.1 Sample Data
 |
+| The [<mark style="background-color: #EEEEEE;color: #FF0000">**Wisconsin Breast Cancer**</mark>](https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data) dataset shared from the [<mark style="background-color: #CCECFF">**Kaggle**</mark>](https://www.kaggle.com/) website as obtained from the [UCI Machine Learning Repository](https://archive.ics.uci.edu/) was used for this illustrated example.   
 |
 | Preliminary dataset assessment:
+|
+| **[A]** 1138 rows (observations)
+| 
+| **[B]** 32 columns (variables)
+|      **[B.1]** 1/32 metadata (unique identifiers) = <span style="color: #FF0000">id</span> (numeric)
+|      **[B.2]** 1/32 response = <span style="color: #FF0000">diagnosis</span> (factor)
+|      **[B.3]** 30/32 predictors = 30/30 numeric
+|             **[B.3.1]** <span style="color: #FF0000">radius_mean</span> (numeric)
+|             **[B.3.2]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|             **[B.3.3]** <span style="color: #FF0000">perimeter_mean</span> (numeric)
+|             **[B.3.4]** <span style="color: #FF0000">area_mean</span> (numeric)
+|             **[B.3.5]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|             **[B.3.6]** <span style="color: #FF0000">compactness_mean</span> (numeric)
+|             **[B.3.7]** <span style="color: #FF0000">concavity_mean</span> (numeric)
+|             **[B.3.8]** <span style="color: #FF0000">concave points_mean</span> (numeric)
+|             **[B.3.9]** <span style="color: #FF0000">symmetry_mean</span> (numeric)
+|             **[B.3.10]** <span style="color: #FF0000">fractal_dimension_mean</span> (numeric)
+|             **[B.3.11]** <span style="color: #FF0000">radius_se</span> (numeric)
+|             **[B.3.12]** <span style="color: #FF0000">texture_se</span> (numeric)
+|             **[B.3.13]** <span style="color: #FF0000">perimeter_se</span> (numeric)
+|             **[B.3.14]** <span style="color: #FF0000">area_se</span> (numeric)
+|             **[B.3.15]** <span style="color: #FF0000">smoothness_se</span> (numeric)
+|             **[B.3.16]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|             **[B.3.17]** <span style="color: #FF0000">concavity_se</span> (numeric)
+|             **[B.3.18]** <span style="color: #FF0000">concave points_se</span> (numeric)
+|             **[B.3.19]** <span style="color: #FF0000">symmetry_se</span> (numeric)
+|             **[B.3.20]** <span style="color: #FF0000">fractal_dimension_se</span> (numeric)
+|             **[B.3.21]** <span style="color: #FF0000">radius_worst</span> (numeric)
+|             **[B.3.22]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|             **[B.3.23]** <span style="color: #FF0000">perimeter_worst</span> (numeric)
+|             **[B.3.24]** <span style="color: #FF0000">area_worst</span> (numeric)
+|             **[B.3.25]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|             **[B.3.26]** <span style="color: #FF0000">compactness_worst</span> (numeric)
+|             **[B.3.27]** <span style="color: #FF0000">concavity_worst</span> (numeric)
+|             **[B.3.28]** <span style="color: #FF0000">concave points_worst</span> (numeric)
+|             **[B.3.29]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|             **[B.3.30]** <span style="color: #FF0000">fractal_dimension_worst</span> (numeric)
 |
 | 
 
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.1, warning=FALSE, message=FALSE}
+##################################
+# Loading R libraries
+##################################
+library(AppliedPredictiveModeling)
+library(tidyr)
+library(caret)
+library(lattice)
+library(dplyr)
+library(moments)
+library(skimr)
+library(RANN)
+library(pls)
+library(corrplot)
+library(lares)
+library(DMwR)
+library(gridExtra)
+library(rattle)
+library(RColorBrewer)
+library(stats)
+library(caretEnsemble)
+
+##################################
+# Loading source and
+# formulating the analysis set
+##################################
+BreastCancer <- read.csv("WisconsinBreastCancer.csv",
+                   na.strings=c("NA","NaN"," ",""),
+                   stringsAsFactors = FALSE)
+BreastCancer <- as.data.frame(BreastCancer)
+
+##################################
+# Performing a general exploration of the data set
+##################################
+dim(BreastCancer)
+str(BreastCancer)
+summary(BreastCancer)
+
+##################################
+# Setting the data type
+# for the response variable
+##################################
+BreastCancer$diagnosis <- factor(BreastCancer$diagnosis,
+                                 levels = c("B","M"))
+
+##################################
+# Formulating a data type assessment summary
+##################################
+PDA <- BreastCancer
+(PDA.Summary <- data.frame(
+  Column.Index=c(1:length(names(PDA))),
+  Column.Name= names(PDA), 
+  Column.Type=sapply(PDA, function(x) class(x)), 
+  row.names=NULL)
+)
 
 ```
 
@@ -38,13 +130,237 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
 
 ##  1.2 Data Quality Assessment
 |
-| Details.
+| **[A]** No missing observations noted for any variable.
+|
+| **[B]** Low variance observed for any variable with First.Second.Mode.Ratio>5.
+|      **[B.1]** <span style="color: #FF0000">concavity_se</span> = 6.50
+|
+| **[C]** No low variance observed for any variable with Unique.Count.Ratio<0.01.
+|
+| **[D]** No high skewness observed for any variable with Skewness>3 or Skewness<(-3).
+|      **[D.1]** <span style="color: #FF0000">radius_se</span> = +3.08
+|      **[D.2]** <span style="color: #FF0000">perimeter_se</span> = +3.43
+|      **[D.3]** <span style="color: #FF0000">area_se</span> = +5.43
+|      **[D.4]** <span style="color: #FF0000">concavity_se</span> = +5.10
+|      **[D.5]** <span style="color: #FF0000">fractal_dimension_se</span> = +3.91
 |
 |
 
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.2, warning=FALSE, message=FALSE}
+##################################
+# Loading dataset
+##################################
+DQA <- BreastCancer
+
+##################################
+# Formulating an overall data quality assessment summary
+##################################
+(DQA.Summary <- data.frame(
+  Column.Name= names(DQA),
+  Column.Type=sapply(DQA, function(x) class(x)),
+  Row.Count=sapply(DQA, function(x) nrow(DQA)),
+  NA.Count=sapply(DQA,function(x)sum(is.na(x))),
+  Fill.Rate=sapply(DQA,function(x)format(round((sum(!is.na(x))/nrow(DQA)),3),nsmall=3)),
+  row.names=NULL)
+)
+
+##################################
+# Listing all Predictors
+##################################
+DQA.Predictors <- DQA[,!names(DQA) %in% c("id","diagnosis")]
+
+##################################
+# Listing all numeric Predictors
+##################################
+DQA.Predictors.Numeric <- DQA.Predictors[,sapply(DQA.Predictors, is.numeric)]
+
+if (length(names(DQA.Predictors.Numeric))>0) {
+    print(paste0("There are ",
+               (length(names(DQA.Predictors.Numeric))),
+               " numeric predictor variable(s)."))
+} else {
+  print("There are no numeric predictor variables.")
+}
+
+##################################
+# Listing all factor Predictors
+##################################
+DQA.Predictors.Factor <- DQA.Predictors[,sapply(DQA.Predictors, is.factor)]
+
+if (length(names(DQA.Predictors.Factor))>0) {
+    print(paste0("There are ",
+               (length(names(DQA.Predictors.Factor))),
+               " factor predictor variable(s)."))
+} else {
+  print("There are no factor predictor variables.")
+}
+
+##################################
+# Formulating a data quality assessment summary for factor Predictors
+##################################
+if (length(names(DQA.Predictors.Factor))>0) {
+
+  ##################################
+  # Formulating a function to determine the first mode
+  ##################################
+  FirstModes <- function(x) {
+    ux <- unique(na.omit(x))
+    tab <- tabulate(match(x, ux))
+    ux[tab == max(tab)]
+  }
+
+  ##################################
+  # Formulating a function to determine the second mode
+  ##################################
+  SecondModes <- function(x) {
+    ux <- unique(na.omit(x))
+    tab <- tabulate(match(x, ux))
+    fm = ux[tab == max(tab)]
+    sm = x[!(x %in% fm)]
+    usm <- unique(sm)
+    tabsm <- tabulate(match(sm, usm))
+    ifelse(is.na(usm[tabsm == max(tabsm)])==TRUE,
+           return("x"),
+           return(usm[tabsm == max(tabsm)]))
+  }
+
+  (DQA.Predictors.Factor.Summary <- data.frame(
+  Column.Name= names(DQA.Predictors.Factor),
+  Column.Type=sapply(DQA.Predictors.Factor, function(x) class(x)),
+  Unique.Count=sapply(DQA.Predictors.Factor, function(x) length(unique(x))),
+  First.Mode.Value=sapply(DQA.Predictors.Factor, function(x) as.character(FirstModes(x)[1])),
+  Second.Mode.Value=sapply(DQA.Predictors.Factor, function(x) as.character(SecondModes(x)[1])),
+  First.Mode.Count=sapply(DQA.Predictors.Factor, function(x) sum(na.omit(x) == FirstModes(x)[1])),
+  Second.Mode.Count=sapply(DQA.Predictors.Factor, function(x) sum(na.omit(x) == SecondModes(x)[1])),
+  Unique.Count.Ratio=sapply(DQA.Predictors.Factor, function(x) format(round((length(unique(x))/nrow(DQA.Predictors.Factor)),3), nsmall=3)),
+  First.Second.Mode.Ratio=sapply(DQA.Predictors.Factor, function(x) format(round((sum(na.omit(x) == FirstModes(x)[1])/sum(na.omit(x) == SecondModes(x)[1])),3), nsmall=3)),
+  row.names=NULL)
+  )
+
+}
+
+##################################
+# Formulating a data quality assessment summary for numeric Predictors
+##################################
+if (length(names(DQA.Predictors.Numeric))>0) {
+
+  ##################################
+  # Formulating a function to determine the first mode
+  ##################################
+  FirstModes <- function(x) {
+    ux <- unique(na.omit(x))
+    tab <- tabulate(match(x, ux))
+    ux[tab == max(tab)]
+  }
+
+  ##################################
+  # Formulating a function to determine the second mode
+  ##################################
+  SecondModes <- function(x) {
+    ux <- unique(na.omit(x))
+    tab <- tabulate(match(x, ux))
+    fm = ux[tab == max(tab)]
+    sm = na.omit(x)[!(na.omit(x) %in% fm)]
+    usm <- unique(sm)
+    tabsm <- tabulate(match(sm, usm))
+    ifelse(is.na(usm[tabsm == max(tabsm)])==TRUE,
+           return(0.00001),
+           return(usm[tabsm == max(tabsm)]))
+  }
+
+  (DQA.Predictors.Numeric.Summary <- data.frame(
+  Column.Name= names(DQA.Predictors.Numeric),
+  Column.Type=sapply(DQA.Predictors.Numeric, function(x) class(x)),
+  Unique.Count=sapply(DQA.Predictors.Numeric, function(x) length(unique(x))),
+  Unique.Count.Ratio=sapply(DQA.Predictors.Numeric, function(x) format(round((length(unique(x))/nrow(DQA.Predictors.Numeric)),3), nsmall=3)),
+  First.Mode.Value=sapply(DQA.Predictors.Numeric, function(x) format(round((FirstModes(x)[1]),3),nsmall=3)),
+  Second.Mode.Value=sapply(DQA.Predictors.Numeric, function(x) format(round((SecondModes(x)[1]),3),nsmall=3)),
+  First.Mode.Count=sapply(DQA.Predictors.Numeric, function(x) sum(na.omit(x) == FirstModes(x)[1])),
+  Second.Mode.Count=sapply(DQA.Predictors.Numeric, function(x) sum(na.omit(x) == SecondModes(x)[1])),
+  First.Second.Mode.Ratio=sapply(DQA.Predictors.Numeric, function(x) format(round((sum(na.omit(x) == FirstModes(x)[1])/sum(na.omit(x) == SecondModes(x)[1])),3), nsmall=3)),
+  Minimum=sapply(DQA.Predictors.Numeric, function(x) format(round(min(x,na.rm = TRUE),3), nsmall=3)),
+  Mean=sapply(DQA.Predictors.Numeric, function(x) format(round(mean(x,na.rm = TRUE),3), nsmall=3)),
+  Median=sapply(DQA.Predictors.Numeric, function(x) format(round(median(x,na.rm = TRUE),3), nsmall=3)),
+  Maximum=sapply(DQA.Predictors.Numeric, function(x) format(round(max(x,na.rm = TRUE),3), nsmall=3)),
+  Skewness=sapply(DQA.Predictors.Numeric, function(x) format(round(skewness(x,na.rm = TRUE),3), nsmall=3)),
+  Kurtosis=sapply(DQA.Predictors.Numeric, function(x) format(round(kurtosis(x,na.rm = TRUE),3), nsmall=3)),
+  Percentile25th=sapply(DQA.Predictors.Numeric, function(x) format(round(quantile(x,probs=0.25,na.rm = TRUE),3), nsmall=3)),
+  Percentile75th=sapply(DQA.Predictors.Numeric, function(x) format(round(quantile(x,probs=0.75,na.rm = TRUE),3), nsmall=3)),
+  row.names=NULL)
+  )
+
+}
+
+##################################
+# Identifying potential data quality issues
+##################################
+
+##################################
+# Checking for missing observations
+##################################
+if ((nrow(DQA.Summary[DQA.Summary$NA.Count>0,]))>0){
+  print(paste0("Missing observations noted for ",
+               (nrow(DQA.Summary[DQA.Summary$NA.Count>0,])),
+               " variable(s) with NA.Count>0 and Fill.Rate<1.0."))
+  DQA.Summary[DQA.Summary$NA.Count>0,]
+} else {
+  print("No missing observations noted.")
+}
+
+##################################
+# Checking for zero or near-zero variance Predictors
+##################################
+if (length(names(DQA.Predictors.Factor))==0) {
+  print("No factor predictors noted.")
+} else if (nrow(DQA.Predictors.Factor.Summary[as.numeric(as.character(DQA.Predictors.Factor.Summary$First.Second.Mode.Ratio))>5,])>0){
+  print(paste0("Low variance observed for ",
+               (nrow(DQA.Predictors.Factor.Summary[as.numeric(as.character(DQA.Predictors.Factor.Summary$First.Second.Mode.Ratio))>5,])),
+               " factor variable(s) with First.Second.Mode.Ratio>5."))
+  DQA.Predictors.Factor.Summary[as.numeric(as.character(DQA.Predictors.Factor.Summary$First.Second.Mode.Ratio))>5,]
+} else {
+  print("No low variance factor predictors due to high first-second mode ratio noted.")
+}
+
+if (length(names(DQA.Predictors.Numeric))==0) {
+  print("No numeric predictors noted.")
+} else if (nrow(DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$First.Second.Mode.Ratio))>5,])>0){
+  print(paste0("Low variance observed for ",
+               (nrow(DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$First.Second.Mode.Ratio))>5,])),
+               " numeric variable(s) with First.Second.Mode.Ratio>5."))
+  DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$First.Second.Mode.Ratio))>5,]
+} else {
+  print("No low variance numeric predictors due to high first-second mode ratio noted.")
+}
+
+if (length(names(DQA.Predictors.Numeric))==0) {
+  print("No numeric predictors noted.")
+} else if (nrow(DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$Unique.Count.Ratio))<0.01,])>0){
+  print(paste0("Low variance observed for ",
+               (nrow(DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$Unique.Count.Ratio))<0.01,])),
+               " numeric variable(s) with Unique.Count.Ratio<0.01."))
+  DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$Unique.Count.Ratio))<0.01,]
+} else {
+  print("No low variance numeric predictors due to low unique count ratio noted.")
+}
+
+##################################
+# Checking for skewed Predictors
+##################################
+if (length(names(DQA.Predictors.Numeric))==0) {
+  print("No numeric predictors noted.")
+} else if (nrow(DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$Skewness))>3 |
+                                               as.numeric(as.character(DQA.Predictors.Numeric.Summary$Skewness))<(-3),])>0){
+  print(paste0("High skewness observed for ",
+  (nrow(DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$Skewness))>3 |
+                                               as.numeric(as.character(DQA.Predictors.Numeric.Summary$Skewness))<(-3),])),
+  " numeric variable(s) with Skewness>3 or Skewness<(-3)."))
+  DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$Skewness))>3 |
+                                 as.numeric(as.character(DQA.Predictors.Numeric.Summary$Skewness))<(-3),]
+} else {
+  print("No skewed numeric predictors noted.")
+}
 
 ```
 
@@ -61,10 +377,54 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.3.1.1, warning=FALSE, message=FALSE}
+##################################
+# Loading dataset
+##################################
+DPA <- DQA[,!names(DQA) %in% c("id")]
+
+##################################
+# Gathering descriptive statistics
+##################################
+(DPA_Skimmed <- skim(DPA)) 
 
 ```
 
 ```{r section_1.3.1.2, warning=FALSE, message=FALSE, fig.width=15, fig.height=2}
+
+##################################
+# Outlier Detection
+##################################
+
+##################################
+# Listing all Predictors
+##################################
+DPA.Predictors <- DPA[,!names(DPA) %in% c("diagnosis")]
+
+##################################
+# Listing all numeric Predictors
+##################################
+DPA.Predictors.Numeric <- DPA.Predictors[,sapply(DPA.Predictors, is.numeric)]
+
+##################################
+# Identifying outliers for the numeric Predictors
+##################################
+OutlierCountList <- c()
+
+for (i in 1:ncol(DPA.Predictors.Numeric)) {
+  Outliers <- boxplot.stats(DPA.Predictors.Numeric[,i])$out
+  OutlierCount <- length(Outliers)
+  OutlierCountList <- append(OutlierCountList,OutlierCount)
+  OutlierIndices <- which(DPA.Predictors.Numeric[,i] %in% c(Outliers))
+  print(
+  ggplot(DPA.Predictors.Numeric, aes(x=DPA.Predictors.Numeric[,i])) +
+  geom_boxplot() +
+  theme_bw() +
+  theme(axis.text.y=element_blank(), 
+        axis.ticks.y=element_blank()) +
+  xlab(names(DPA.Predictors.Numeric)[i]) +
+  labs(title=names(DPA.Predictors.Numeric)[i],
+       subtitle=paste0(OutlierCount, " Outlier(s) Detected")))
+}
 
 ```
 
@@ -79,6 +439,49 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.3.2, warning=FALSE, message=FALSE}
+
+##################################
+# Zero and Near-Zero Variance
+##################################
+
+##################################
+# Identifying columns with low variance
+###################################
+DPA_LowVariance <- nearZeroVar(DPA,
+                               freqCut = 80/20,
+                               uniqueCut = 10,
+                               saveMetrics= TRUE)
+(DPA_LowVariance[DPA_LowVariance$nzv,])
+
+if ((nrow(DPA_LowVariance[DPA_LowVariance$nzv,]))==0){
+  
+  print("No low variance descriptors noted.")
+  
+} else {
+
+  print(paste0("Low variance observed for ",
+               (nrow(DPA_LowVariance[DPA_LowVariance$nzv,])),
+               " numeric variable(s) with First.Second.Mode.Ratio>4 and Unique.Count.Ratio<0.10."))
+  
+  DPA_LowVarianceForRemoval <- (nrow(DPA_LowVariance[DPA_LowVariance$nzv,]))
+  
+  print(paste0("Low variance can be resolved by removing ",
+               (nrow(DPA_LowVariance[DPA_LowVariance$nzv,])),
+               " numeric variable(s)."))
+  
+  for (j in 1:DPA_LowVarianceForRemoval) {
+  DPA_LowVarianceRemovedVariable <- rownames(DPA_LowVariance[DPA_LowVariance$nzv,])[j]
+  print(paste0("Variable ",
+               j,
+               " for removal: ",
+               DPA_LowVarianceRemovedVariable))
+  }
+  
+  DPA %>%
+  skim() %>%
+  dplyr::filter(skim_variable %in% rownames(DPA_LowVariance[DPA_LowVariance$nzv,]))
+
+}
 
 ```
 
