@@ -796,7 +796,7 @@ DPA_BoxCoxTransformed$diagnosis <- DPA[,c("diagnosis")]
 |      **[A.11]** <span style="color: #FF0000">concave.points_se</span> = High outlier count even after shape transformation
 |      **[A.12]** <span style="color: #FF0000">concavity_worst</span> = High outlier count even after shape transformation
 |
-| **[B]** The preprocessed tabular dataset was comprised of 364 observations and 14 variables (including 1 metadata, 1 response and 12 predictors). 
+| **[B]** The preprocessed tabular dataset was comprised of 1138 observations and 19 variables (including 1 response and 18 predictors). 
 |      **[B.1]** 1138 rows (observations)
 |      **[B.2]** 19 columns (variables)
 |             **[B.2.1]** 1/19 response = <span style="color: #FF0000">diagnosis</span> (factor)
