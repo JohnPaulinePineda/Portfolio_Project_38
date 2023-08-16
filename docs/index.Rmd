@@ -774,7 +774,7 @@ for (i in 1:ncol(DPA_BoxCoxTransformed)) {
        subtitle=paste0(OutlierCount, " Outlier(s) Detected")))
 }
 
-DPA_BoxCoxTransformed <- cbind(DPA_BoxCoxTransformed,DPA[,c("diagnosis")])
+DPA_BoxCoxTransformed$diagnosis <- DPA[,c("diagnosis")]
 
 ```
 
@@ -782,19 +782,70 @@ DPA_BoxCoxTransformed <- cbind(DPA_BoxCoxTransformed,DPA[,c("diagnosis")])
 
 ###  1.3.6 Pre-Processed Dataset
 |
-| **[A]** High skewness observed for 5 predictors with Skewness>3 or Skewness<(-3).
-|      **[A.1]** <span style="color: #FF0000">radius_se</span> = +3.08
-|      **[A.2]** <span style="color: #FF0000">perimeter_se</span> = +3.43
-|      **[A.3]** <span style="color: #FF0000">area_se</span> = +5.43
-|      **[A.4]** <span style="color: #FF0000">concavity_se</span> = +5.10
-|      **[A.5]** <span style="color: #FF0000">fractal_dimension_se</span> = +3.91
+| **[A]**  A total of 12 predictors were removed prior to data exploration and modelling due to issues identified during data preprocessing.
+|      **[A.1]** <span style="color: #FF0000">concavity_se</span> = Low variance and high skewness
+|      **[A.2]** <span style="color: #FF0000">perimeter_worst</span> = High correlation with <span style="color: #FF0000">radius_worst</span>, <span style="color: #FF0000">area_worst</span>, <span style="color: #FF0000">perimeter_mean</span>, <span style="color: #FF0000">radius_mean</span> and <span style="color: #FF0000">area_mean</span>
+|      **[A.3]** <span style="color: #FF0000">radius_worst</span> = High correlation with <span style="color: #FF0000">perimeter_worst</span>, <span style="color: #FF0000">area_worst</span>, <span style="color: #FF0000">radius_mean</span>, <span style="color: #FF0000">perimeter_mean</span> and <span style="color: #FF0000">area_mean</span>
+|      **[A.4]** <span style="color: #FF0000">perimeter_mean</span> = High correlation with <span style="color: #FF0000">radius_mean</span>, <span style="color: #FF0000">area_mean</span>, <span style="color: #FF0000">perimeter_worst</span> and <span style="color: #FF0000">radius_worst</span>
+|      **[A.5]** <span style="color: #FF0000">area_worst</span> = High correlation with <span style="color: #FF0000">radius_worst</span>, <span style="color: #FF0000">perimeter_worst</span> and <span style="color: #FF0000">area_mean</span>
+|      **[A.6]** <span style="color: #FF0000">radius_mean</span> = High correlation with <span style="color: #FF0000">perimeter_mean</span>, <span style="color: #FF0000">area_mean</span>, <span style="color: #FF0000">radius_worst</span> and <span style="color: #FF0000">perimeter_worst </span>.
+|      **[A.7]** <span style="color: #FF0000">perimeter_se</span> = High correlation with <span style="color: #FF0000">radius_se</span>
+|      **[A.8]** <span style="color: #FF0000">area_se</span> = High correlation with <span style="color: #FF0000">radius_se</span>
+|      **[A.9]** <span style="color: #FF0000">concavity_mean</span> = High outlier count even after shape transformation
+|      **[A.10]** <span style="color: #FF0000">concave.points_mean</span> = High outlier count even after shape transformation
+|      **[A.11]** <span style="color: #FF0000">concave.points_se</span> = High outlier count even after shape transformation
+|      **[A.12]** <span style="color: #FF0000">concavity_worst</span> = High outlier count even after shape transformation
+|
+| **[B]** The preprocessed tabular dataset was comprised of 364 observations and 14 variables (including 1 metadata, 1 response and 12 predictors). 
+|      **[B.1]** 1138 rows (observations)
+|      **[B.2]** 19 columns (variables)
+|             **[B.2.1]** 1/19 response = <span style="color: #FF0000">diagnosis</span> (factor)
+|             **[B.2.2]** 18/19 predictors = 18/18 numeric
+|                      **[B.2.2.1]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|                      **[B.2.2.2]** <span style="color: #FF0000">area_mean</span> (numeric)
+|                      **[B.2.2.3]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|                      **[B.2.2.4]** <span style="color: #FF0000">compactness_mean</span> (numeric)
+|                      **[B.2.2.5]** <span style="color: #FF0000">symmetry_mean	</span> (numeric)
+|                      **[B.2.2.6]** <span style="color: #FF0000">fractal_dimension_mean</span> (numeric)
+|                      **[B.2.2.7]** <span style="color: #FF0000">radius_se</span> (numeric)
+|                      **[B.2.2.8]** <span style="color: #FF0000">texture_se</span> (numeric)
+|                      **[B.2.2.9]** <span style="color: #FF0000">smoothness_se</span> (numeric)
+|                      **[B.2.2.10]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|                      **[B.2.2.11]** <span style="color: #FF0000">symmetry_se</span> (numeric)
+|                      **[B.2.2.12]** <span style="color: #FF0000">fractal_dimension_se</span> (numeric)
+|                      **[B.2.2.13]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|                      **[B.2.2.14]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|                      **[B.2.2.15]** <span style="color: #FF0000">compactness_worst</span> (numeric)
+|                      **[B.2.2.16]** <span style="color: #FF0000">concave.points_worst</span> (numeric)
+|                      **[B.2.2.17]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|                      **[B.2.2.18]** <span style="color: #FF0000">fractal_dimension_worst</span> (numeric)
 |
 |
 
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.3.6, warning=FALSE, message=FALSE, fig.width=15, fig.height=2}
+##################################
+# Creating the pre-modelling
+# train set
+##################################
+PMA <- DPA_BoxCoxTransformed[,!names(DPA_BoxCoxTransformed) %in% c("concavity_se",
+                                                                   "perimeter_worst",
+                                                                   "radius_worst",
+                                                                   "perimeter_mean",
+                                                                   "area_worst",
+                                                                   "radius_mean",
+                                                                   "perimeter_se",
+                                                                   "area_se",
+                                                                   "concavity_mean",
+                                                                   "concave.points_mean",
+                                                                   "concave.points_se",
+                                                                   "concavity_worst")]
 
+##################################
+# Gathering descriptive statistics
+##################################
+(PMA_Skimmed <- skim(PMA))
 ```
 
 </details>
