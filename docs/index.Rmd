@@ -846,19 +846,96 @@ PMA <- DPA_BoxCoxTransformed[,!names(DPA_BoxCoxTransformed) %in% c("concavity_se
 # Gathering descriptive statistics
 ##################################
 (PMA_Skimmed <- skim(PMA))
+
 ```
 
 </details>
 
 ## 1.4 Data Exploration
 |
-| Details.
+| **[A]** Individual predictors which demonstrated excellent discrimination between <span style="color: #FF0000">diagnosis=M</span> and <span style="color: #FF0000">diagnosis=B</span> in terms of the area under the receiver operating characteristics curve (AUROC) are as follows:
+|      **[A.1]** <span style="color: #FF0000">concave.points_worst</span> = 0.97
+|      **[A.2]** <span style="color: #FF0000">area_mean</span> = 0.94
+|      **[A.3]** <span style="color: #FF0000">radius_se</span> = 0.87
+|      **[A.4]** <span style="color: #FF0000">compactness_mean</span> = 0.86
+|      **[A.5]** <span style="color: #FF0000">compactness_worst</span> = 0.86
+|      **[A.6]** <span style="color: #FF0000">texture_worst</span> = 0.78
+|      **[A.7]** <span style="color: #FF0000">texture_mean</span> = 0.77
+|      **[A.8]** <span style="color: #FF0000">smoothness_worst</span> = 0.75
 |
 |
 
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.4, warning=FALSE, message=FALSE}
+##################################
+# Loading dataset
+##################################
+DPA <- PMA
+
+##################################
+# Listing all predictors
+##################################
+DPA.Predictors <- DPA[,!names(DPA) %in% c("diagnosis")]
+
+##################################
+# Listing all numeric predictors
+##################################
+DPA.Predictors.Numeric <- DPA.Predictors[,sapply(DPA.Predictors, is.numeric)]
+ncol(DPA.Predictors.Numeric)
+
+##################################
+# Converting response variable data type to factor
+##################################
+DPA$diagnosis <- as.factor(DPA$diagnosis)
+length(levels(DPA$diagnosis))
+
+##################################
+# Formulating the box plots
+##################################
+featurePlot(x = DPA.Predictors.Numeric, 
+            y = DPA$diagnosis,
+            plot = "box",
+            scales = list(x = list(relation="free", rot = 90), 
+                          y = list(relation="free")),
+            adjust = 1.5, 
+            pch = "|", 
+            layout = c(6, 3))
+
+##################################
+# Obtaining the AUROC
+##################################
+AUROC <- filterVarImp(x = DPA.Predictors.Numeric,
+                        y = DPA$diagnosis)
+
+##################################
+# Formulating the summary table
+##################################
+AUROC_Summary <- AUROC 
+
+AUROC_Summary$Predictor <- rownames(AUROC)
+names(AUROC_Summary)[1] <- "AUROC"
+AUROC_Summary$Metric <- rep("AUROC",nrow(AUROC))
+
+AUROC_Summary[order(AUROC_Summary$AUROC, decreasing=TRUE),] 
+
+##################################
+# Exploring predictor performance
+##################################
+dotplot(Predictor ~ AUROC | Metric, 
+        AUROC_Summary,
+        origin = 0,
+        type = c("p", "h"),
+        pch = 16,
+        cex = 2,
+        alpha = 0.45,
+        prepanel = function(x, y) {
+            list(ylim = levels(reorder(y, x)))
+        },
+        panel = function(x, y, ...) {
+            panel.dotplot(x, reorder(y, x), ...)
+        })
+
 
 ```
 
