@@ -936,6 +936,14 @@ dotplot(Predictor ~ AUROC | Metric,
             panel.dotplot(x, reorder(y, x), ...)
         })
 
+##################################
+# Creating the pre-modelling dataset
+# into the train and test sets
+##################################
+set.seed(12345678)
+MA_Train_Index  <- createDataPartition(DPA$diagnosis,p=0.8)[[1]]
+MA_Train        <- DPA[ MA_Train_Index, ]
+MA_Test         <- DPA[-MA_Train_Index, ]
 
 ```
 
@@ -943,7 +951,7 @@ dotplot(Predictor ~ AUROC | Metric,
 
 ## 1.5 Model Boosting
 
-###  1.5.1 Boosting Model 1
+###  1.5.1 Adaptive Boosting (MBS_AB)
 |
 | Details.
 |
@@ -957,7 +965,7 @@ dotplot(Predictor ~ AUROC | Metric,
 
 </details>
 
-###  1.5.2 Boosting Model 2
+###  1.5.2 Stochastic Gradient Boosting (MBS_GBM)
 |
 | Details.
 |
@@ -971,7 +979,7 @@ dotplot(Predictor ~ AUROC | Metric,
 
 </details>
 
-###  1.5.3 Boosting Model 3
+###  1.5.3 Extreme Gradient Boosting (MBS_XGB)
 |
 | Details.
 |
@@ -987,7 +995,7 @@ dotplot(Predictor ~ AUROC | Metric,
 
 ## 1.6 Model Bagging
 
-###  1.6.1 Bagging Model 1
+###  1.6.1 Random Forest (MBG_RF)
 |
 | Details.
 |
@@ -1001,7 +1009,7 @@ dotplot(Predictor ~ AUROC | Metric,
 
 </details>
 
-###  1.6.2 Boosting Model 2
+###  1.6.2 Bagged Classification and Regression Trees (MBG_BTREE)
 |
 | Details.
 |
@@ -1017,7 +1025,7 @@ dotplot(Predictor ~ AUROC | Metric,
 
 ## 1.7 Model Stacking
 
-###  1.7.1 Stacking Model 1
+###  1.7.1 Base Learner Model Development using Linear Discriminant Analysis (BAL_LDA)
 |
 | Details.
 |
@@ -1026,6 +1034,91 @@ dotplot(Predictor ~ AUROC | Metric,
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.7.1, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+###  1.7.2 Base Learner Model Development using Classification and Regression Trees (BAL_CART)
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.2, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+###  1.7.3 Base Learner Model Development using Support Vector Machine - Radial Basis Function Kernel (BAL_SVM_R)
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.3, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+###  1.7.4 Base Learner Model Development using K-Nearest Neighbors (BAL_KNN)
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.4, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+###  1.7.5 Base Learner Model Development using Naive Bayes (BAL_NB)
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.5, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+
+###  1.7.6 Meta Learner Model Development using Linear Regression (MEL_LR)
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.6, warning=FALSE, message=FALSE}
+
+```
+
+</details>
+
+###  1.7.7 Meta Learner Model Development using Random Forest (MEL_RF)
+|
+| Details.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.7, warning=FALSE, message=FALSE}
 
 ```
 
