@@ -40,7 +40,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
 |             **[B.3.5]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
 |             **[B.3.6]** <span style="color: #FF0000">compactness_mean</span> (numeric)
 |             **[B.3.7]** <span style="color: #FF0000">concavity_mean</span> (numeric)
-|             **[B.3.8]** <span style="color: #FF0000">concave points_mean</span> (numeric)
+|             **[B.3.8]** <span style="color: #FF0000">concave.points_mean</span> (numeric)
 |             **[B.3.9]** <span style="color: #FF0000">symmetry_mean</span> (numeric)
 |             **[B.3.10]** <span style="color: #FF0000">fractal_dimension_mean</span> (numeric)
 |             **[B.3.11]** <span style="color: #FF0000">radius_se</span> (numeric)
@@ -50,7 +50,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
 |             **[B.3.15]** <span style="color: #FF0000">smoothness_se</span> (numeric)
 |             **[B.3.16]** <span style="color: #FF0000">compactness_se</span> (numeric)
 |             **[B.3.17]** <span style="color: #FF0000">concavity_se</span> (numeric)
-|             **[B.3.18]** <span style="color: #FF0000">concave points_se</span> (numeric)
+|             **[B.3.18]** <span style="color: #FF0000">concave.points_se</span> (numeric)
 |             **[B.3.19]** <span style="color: #FF0000">symmetry_se</span> (numeric)
 |             **[B.3.20]** <span style="color: #FF0000">fractal_dimension_se</span> (numeric)
 |             **[B.3.21]** <span style="color: #FF0000">radius_worst</span> (numeric)
@@ -60,7 +60,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
 |             **[B.3.25]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
 |             **[B.3.26]** <span style="color: #FF0000">compactness_worst</span> (numeric)
 |             **[B.3.27]** <span style="color: #FF0000">concavity_worst</span> (numeric)
-|             **[B.3.28]** <span style="color: #FF0000">concave points_worst</span> (numeric)
+|             **[B.3.28]** <span style="color: #FF0000">concave.points_worst</span> (numeric)
 |             **[B.3.29]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
 |             **[B.3.30]** <span style="color: #FF0000">fractal_dimension_worst</span> (numeric)
 |
@@ -370,7 +370,36 @@ if (length(names(DQA.Predictors.Numeric))==0) {
 
 ###  1.3.1 Outlier Detection
 |
-| Details.
+| **[A]** Outliers noted for 29 out of the 30 numeric predictors. Predictor values were visualized through a boxplot including observations classified as suspected outliers using the IQR criterion. The IQR criterion means that all observations above the (75th percentile + 1.5 x IQR) or below the (25th percentile - 1.5 x IQR) are suspected outliers, where IQR is the difference between the third quartile (75th percentile) and first quartile (25th percentile).
+|      **[A.1]** <span style="color: #FF0000">radius_mean</span> = 28
+|      **[A.2]** <span style="color: #FF0000">texture_mean</span> = 14
+|      **[A.3]** <span style="color: #FF0000">perimeter_mean</span> = 26
+|      **[A.4]** <span style="color: #FF0000">area_mean</span> = 50
+|      **[A.5]** <span style="color: #FF0000">smoothness_mean</span> = 12
+|      **[A.6]** <span style="color: #FF0000">compactness_mean</span> = 32
+|      **[A.7]** <span style="color: #FF0000">concavity_mean</span> = 36
+|      **[A.8]** <span style="color: #FF0000">concave.points_mean</span> = 20
+|      **[A.9]** <span style="color: #FF0000">symmetry_mean</span> = 30
+|      **[A.10]** <span style="color: #FF0000">fractal_dimension_mean</span> = 30
+|      **[A.11]** <span style="color: #FF0000">radius_se</span> = 76
+|      **[A.12]** <span style="color: #FF0000">texture_se</span> = 40
+|      **[A.13]** <span style="color: #FF0000">perimeter_se</span> = 76
+|      **[A.14]** <span style="color: #FF0000">area_se</span> = 130
+|      **[A.15]** <span style="color: #FF0000">smoothness_se</span> = 60
+|      **[A.16]** <span style="color: #FF0000">compactness_se</span> = 56
+|      **[A.17]** <span style="color: #FF0000">concavity_se</span> = 44
+|      **[A.18]** <span style="color: #FF0000">concave.points_se</span> = 38
+|      **[A.19]** <span style="color: #FF0000">symmetry_se</span> = 54
+|      **[A.20]** <span style="color: #FF0000">fractal_dimension_se</span> = 56
+|      **[A.21]** <span style="color: #FF0000">radius_worst</span> = 34
+|      **[A.22]** <span style="color: #FF0000">texture_worst</span> = 10
+|      **[A.23]** <span style="color: #FF0000">perimeter_worst</span> = 30
+|      **[A.24]** <span style="color: #FF0000">area_worst</span> = 70
+|      **[A.25]** <span style="color: #FF0000">smoothness_worst</span> = 14
+|      **[A.26]** <span style="color: #FF0000">compactness_worst</span> = 32
+|      **[A.27]** <span style="color: #FF0000">concavity_worst</span> = 24
+|      **[A.28]** <span style="color: #FF0000">symmetry_worst</span> = 46
+|      **[A.29]** <span style="color: #FF0000">fractal_dimension_worst</span> = 48
 |
 |
 
@@ -432,7 +461,7 @@ for (i in 1:ncol(DPA.Predictors.Numeric)) {
 
 ###  1.3.2 Zero and Near-Zero Variance
 |
-| Details.
+| **[A]** No low variance observed for any predictor using a preprocessing summary from the <mark style="background-color: #CCECFF">**caret**</mark> package. The <span style="color: #0000FF">nearZeroVar</span> method using both the <span style="color: #0000FF">freqCut</span> and <span style="color: #0000FF">uniqueCut</span> criteria set at 95/5 and 10, respectively, were applied on the dataset.
 |
 |
 
@@ -489,7 +518,31 @@ if ((nrow(DPA_LowVariance[DPA_LowVariance$nzv,]))==0){
 
 ###  1.3.3 Collinearity
 |
-| Details.
+| **[A]** High correlation values were noted for 15 pairs of numeric predictors with Pearson correlation coefficients >80% as confirmed using the preprocessing summaries from the <mark style="background-color: #CCECFF">**caret**</mark> package.
+|      **[A.1]** <span style="color: #FF0000">radius_mean</span> and <span style="color: #FF0000">perimeter_mean</span>  = +100%
+|      **[A.2]** <span style="color: #FF0000">radius_worst</span> and <span style="color: #FF0000">perimeter_worst</span>  = +99%
+|      **[A.3]** <span style="color: #FF0000">radius_mean</span> and <span style="color: #FF0000">area_mean</span>  = +99%
+|      **[A.4]** <span style="color: #FF0000">perimeter_mean</span> and <span style="color: #FF0000">area_mean</span>  = +99%
+|      **[A.5]** <span style="color: #FF0000">radius_worst</span> and <span style="color: #FF0000">area_worst</span>  = +98%
+|      **[A.6]** <span style="color: #FF0000">perimeter_worst</span> and <span style="color: #FF0000">area_worst</span>  = +98%
+|      **[A.7]** <span style="color: #FF0000">radius_se</span> and <span style="color: #FF0000">perimeter_se</span>  = +97%
+|      **[A.8]** <span style="color: #FF0000">perimeter_mean</span> and <span style="color: #FF0000">perimeter_worst</span>  = +97%
+|      **[A.9]** <span style="color: #FF0000">radius_mean</span> and <span style="color: #FF0000">radius_worst</span>  = +97%
+|      **[A.10]** <span style="color: #FF0000">perimeter_mean</span> and <span style="color: #FF0000">radius_worst</span>  = +97%%
+|      **[A.11]** <span style="color: #FF0000">radius_mean</span> and <span style="color: #FF0000">perimeter_worst</span>  = +96%
+|      **[A.12]** <span style="color: #FF0000">area_mean</span> and <span style="color: #FF0000">radius_worst</span>  = +96%
+|      **[A.13]** <span style="color: #FF0000">area_mean</span> and <span style="color: #FF0000">area_worst</span>  = +96%
+|      **[A.14]** <span style="color: #FF0000">area_mean</span> and <span style="color: #FF0000">perimeter_worst</span>  = +96%
+|      **[A.15]** <span style="color: #FF0000">radius_se</span> and <span style="color: #FF0000">area_se</span>  = +95%
+|
+| **[B]** 7 predictors driving high pairwise correlation were recommended for removal using the <span style="color: #0000FF">findCorrelation</span> preprocessing method from the <mark style="background-color: #CCECFF">**caret**</mark> package. The function looks at the mean absolute correlation of each predictor and removes that with the largest mean absolute correlation.
+|      **[B.1]** <span style="color: #FF0000">perimeter_worst</span>
+|      **[B.2]** <span style="color: #FF0000">radius_worst</span>
+|      **[B.3]** <span style="color: #FF0000">perimeter_mean</span>
+|      **[B.4]** <span style="color: #FF0000">area_worst</span>
+|      **[B.5]** <span style="color: #FF0000">radius_mean</span>
+|      **[B.6]** <span style="color: #FF0000">perimeter_se</span>
+|      **[B.7]** <span style="color: #FF0000">area_se</span>
 |
 |
 
@@ -540,6 +593,22 @@ corrplot(cor(DPA.Predictors.Numeric,
 ##################################
 (DPA_HighlyCorrelatedCount <- sum(abs(DPA_Correlation[upper.tri(DPA_Correlation)])>0.95))
 
+if (DPA_HighlyCorrelatedCount == 0) {
+  print("No highly correlated predictors noted.")
+} else {
+  print(paste0("High correlation observed for ",
+               (DPA_HighlyCorrelatedCount),
+               " pairs of numeric variable(s) with Correlation.Coefficient>0.95."))
+  
+  (DPA_HighlyCorrelatedPairs <- corr_cross(DPA.Predictors.Numeric,
+  max_pvalue = 0.05, 
+  top = DPA_HighlyCorrelatedCount,
+  rm.na = TRUE,
+  grid = FALSE
+))
+  
+}
+
 if (DPA_HighlyCorrelatedCount > 0) {
   DPA_HighlyCorrelated <- findCorrelation(DPA_Correlation, cutoff = 0.95)
 
@@ -565,7 +634,7 @@ if (DPA_HighlyCorrelatedCount > 0) {
 
 ###  1.3.4 Linear Dependency
 |
-| Details.
+| **[A]** No linear dependencies noted for any subset of numeric variables using the preprocessing summary from the <mark style="background-color: #CCECFF">**caret**</mark> package applying the <span style="color: #0000FF">findLinearCombos</span> method which utilizes the QR decomposition of a matrix to enumerate sets of linear combinations (if they exist). 
 |
 |
 
