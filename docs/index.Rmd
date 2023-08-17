@@ -854,15 +854,20 @@ PMA <- DPA_BoxCoxTransformed[,!names(DPA_BoxCoxTransformed) %in% c("concavity_se
 
 ## 1.4 Data Exploration
 |
-| **[A]** Individual predictors which demonstrated excellent discrimination between <span style="color: #FF0000">diagnosis=M</span> and <span style="color: #FF0000">diagnosis=B</span> in terms of the area under the receiver operating characteristics curve (AUROC) are as follows:
+| **[A]** Individual predictors which demonstrated excellent discrimination between <span style="color: #FF0000">diagnosis=M</span> and <span style="color: #FF0000">diagnosis=B</span> in terms of the area under the receiver operating characteristics curve (AUROC>0.80) are as follows:
 |      **[A.1]** <span style="color: #FF0000">concave.points_worst</span> = 0.97
 |      **[A.2]** <span style="color: #FF0000">area_mean</span> = 0.94
 |      **[A.3]** <span style="color: #FF0000">radius_se</span> = 0.87
 |      **[A.4]** <span style="color: #FF0000">compactness_mean</span> = 0.86
 |      **[A.5]** <span style="color: #FF0000">compactness_worst</span> = 0.86
-|      **[A.6]** <span style="color: #FF0000">texture_worst</span> = 0.78
-|      **[A.7]** <span style="color: #FF0000">texture_mean</span> = 0.77
-|      **[A.8]** <span style="color: #FF0000">smoothness_worst</span> = 0.75
+|
+| **[B]** To allow a better comparison of the ensemble methods, only predictors which demonstrated fair discrimination between <span style="color: #FF0000">diagnosis=M</span> and <span style="color: #FF0000">diagnosis=B</span> in terms of the area under the receiver operating characteristics curve (0.70<AUROC<0.80) are as follows:
+|      **[B.1]** <span style="color: #FF0000">texture_worst</span> = 0.78
+|      **[B.2]** <span style="color: #FF0000">texture_mean</span> = 0.77
+|      **[B.3]** <span style="color: #FF0000">smoothness_worst</span> = 0.75
+|      **[B.4]** <span style="color: #FF0000">symmetry_worst</span> = 0.74
+|      **[B.5]** <span style="color: #FF0000">compactness_se</span> = 0.73
+|      **[B.6]** <span style="color: #FF0000">smoothness_mean</span> = 0.72
 |
 |
 
@@ -941,6 +946,13 @@ dotplot(Predictor ~ AUROC | Metric,
 # Creating the pre-modelling dataset
 # into the train and test sets
 ##################################
+DPA <- DPA[,colnames(DPA) %in% c("diagnosis",
+                                 "texture_worst",
+                                 "texture_mean",
+                                 "smoothness_worst",
+                                 "symmetry_worst",
+                                 "compactness_se",
+                                 "smoothness_mean")]
 set.seed(12345678)
 MA_Train_Index  <- createDataPartition(DPA$diagnosis,p=0.8)[[1]]
 MA_Train        <- DPA[ MA_Train_Index, ]
@@ -1054,7 +1066,7 @@ MBG_RF_Tune$results
 ##################################
 MBG_RF_VarImp <- varImp(MBG_RF_Tune, scale = TRUE)
 plot(MBG_RF_VarImp,
-     top=18,
+     top=6,
      scales=list(y=list(cex = .95)),
      main="Ranked Variable Importance : Random Forest",
      xlab="Scaled Variable Importance Metrics",
@@ -1096,6 +1108,70 @@ MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
 
 ```{r section_1.6.2, warning=FALSE, message=FALSE}
 
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+# No hyperparameter tuning process required
+
+##################################
+# Running the bagged CART model
+# by setting the caret method to 'treebag'
+##################################
+set.seed(12345678)
+MBG_BTREE_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                        y = MA_Train$diagnosis,
+                        method = "treebag",
+                        nbagg = 50,
+                        metric = "ROC",
+                        trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+MBG_BTREE_Tune
+
+MBG_BTREE_Tune$finalModel
+
+MBG_BTREE_Tune$results
+
+(MBG_BTREE_Train_ROCCurveAUC <- MBG_BTREE_Tune$results$ROC)
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+MBG_BTREE_VarImp <- varImp(MBG_BTREE_Tune, scale = TRUE)
+plot(MBG_BTREE_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked Variable Importance : Bagged Classification and Regression Trees",
+     xlab="Scaled Variable Importance Metrics",
+     ylab="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MBG_BTREE_Test <- data.frame(MBG_BTREE_Test_Observed = MA_Test$diagnosis,
+                             MBG_BTREE_Test_Predicted = predict(MBG_BTREE_Tune,
+                                                                MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                                type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+MBG_BTREE_Test_ROC <- roc(response = MBG_BTREE_Test$MBG_BTREE_Test_Observed,
+                          predictor = MBG_BTREE_Test$MBG_BTREE_Test_Predicted.M,
+                          levels = rev(levels(MBG_BTREE_Test$MBG_BTREE_Test_Observed)))
+
+(MBG_BTREE_Test_AUROC <- auc(MBG_BTREE_Test_ROC)[1])
+
 ```
 
 </details>
@@ -1111,6 +1187,70 @@ MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.7.1, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+# No hyperparameter tuning process required
+
+##################################
+# Running the linear discriminant analysis model
+# by setting the caret method to 'lda'
+##################################
+set.seed(12345678)
+BAL_LDA_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                        y = MA_Train$diagnosis,
+                        method = "lda",
+                        preProc = c("center","scale"),
+                        metric = "ROC",
+                        trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+BAL_LDA_Tune
+
+BAL_LDA_Tune$finalModel
+
+BAL_LDA_Tune$results
+
+(BAL_LDA_Train_ROCCurveAUC <- BAL_LDA_Tune$results$ROC)
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+BAL_LDA_VarImp <- varImp(BAL_LDA_Tune, scale = TRUE)
+plot(BAL_LDA_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked Variable Importance : Linear Discriminant Analysis",
+     xlab="Scaled Variable Importance Metrics",
+     ylab="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+BAL_LDA_Test <- data.frame(BAL_LDA_Test_Observed = MA_Test$diagnosis,
+                           BAL_LDA_Test_Predicted = predict(BAL_LDA_Tune,
+                                                            MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                            type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+BAL_LDA_Test_ROC <- roc(response = BAL_LDA_Test$BAL_LDA_Test_Observed,
+                        predictor = BAL_LDA_Test$BAL_LDA_Test_Predicted.M,
+                        levels = rev(levels(BAL_LDA_Test$BAL_LDA_Test_Observed)))
+
+(BAL_LDA_Test_AUROC <- auc(BAL_LDA_Test_ROC)[1])
 
 ```
 
@@ -1183,24 +1323,25 @@ MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
 
 ```{r section_1.7.6, warning=FALSE, message=FALSE}
 
-# ##################################
-# # Consolidating the resampling results
-# # for the formulated model
-# ##################################
-# (MBG_RF_Resampling <- resamples(list(MBG_RF = MBG_RF_Tune,
-#                                     MBG_RF = MBG_RF_Tune)))
-# 
-# summary(MBG_RF_Resampling)
-# 
-# ##################################
-# # Exploring the resampling results
-# ##################################
-# bwplot(MBG_RF_Resampling,
-#        main = "Model Resampling Performance Comparison (Range)",
-#        ylab = "Model",
-#        pch=16,
-#        cex=2,
-#        layout=c(3,1))
+##################################
+# Consolidating the resampling results
+# for the formulated models
+##################################
+(Consolidated_Resampling <- resamples(list(MBG_RF = MBG_RF_Tune,
+                                           MBG_BTREE = MBG_BTREE_Tune,
+                                           BAL_LDA = BAL_LDA_Tune)))
+
+summary(Consolidated_Resampling)
+
+##################################
+# Exploring the resampling results
+##################################
+bwplot(Consolidated_Resampling,
+       main = "Model Resampling Performance Comparison (Range)",
+       ylab = "Model",
+       pch=16,
+       cex=2,
+       layout=c(3,1))
 
 
 ```
