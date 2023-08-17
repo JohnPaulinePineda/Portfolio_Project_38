@@ -1058,7 +1058,7 @@ MBG_RF_Tune$finalModel
 MBG_RF_Tune$results
 
 (MBG_RF_Train_ROCCurveAUC <- MBG_RF_Tune$results[MBG_RF_Tune$results$mtry==MBG_RF_Tune$bestTune$mtry,
-                              c("ROC")])
+                                                 c("ROC")])
 
 ##################################
 # Identifying and plotting the
@@ -1266,6 +1266,71 @@ BAL_LDA_Test_ROC <- roc(response = BAL_LDA_Test$BAL_LDA_Test_Observed,
 
 ```{r section_1.7.2, warning=FALSE, message=FALSE}
 
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+CART_Grid = data.frame(cp = c(0.001, 0.005, 0.010, 0.015, 0.020))
+
+##################################
+# Running the classification and regression tree model
+# by setting the caret method to 'rpart'
+##################################
+set.seed(12345678)
+BAL_CART_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                       y = MA_Train$diagnosis,
+                       method = "rpart",
+                       tuneGrid = CART_Grid,
+                       metric = "ROC",
+                       trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+BAL_CART_Tune
+
+BAL_CART_Tune$finalModel
+
+BAL_CART_Tune$results
+
+(BAL_CART_Train_ROCCurveAUC <- BAL_CART_Tune$results[BAL_CART_Tune$results$cp==BAL_CART_Tune$bestTune$cp,
+                                                     c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+BAL_CART_VarImp <- varImp(BAL_CART_Tune, scale = TRUE)
+plot(BAL_CART_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked Variable Importance : Classification and Regression Trees",
+     xlab="Scaled Variable Importance Metrics",
+     ylab="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+BAL_CART_Test <- data.frame(BAL_CART_Test_Observed = MA_Test$diagnosis,
+                            BAL_CART_Test_Predicted = predict(BAL_CART_Tune,
+                                                              MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                              type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+BAL_CART_Test_ROC <- roc(response = BAL_CART_Test$BAL_CART_Test_Observed,
+                         predictor = BAL_CART_Test$BAL_CART_Test_Predicted.M,
+                         levels = rev(levels(BAL_CART_Test$BAL_CART_Test_Observed)))
+
+(BAL_CART_Test_AUROC <- auc(BAL_CART_Test_ROC)[1])
+
 ```
 
 </details>
@@ -1279,6 +1344,57 @@ BAL_LDA_Test_ROC <- roc(response = BAL_LDA_Test$BAL_LDA_Test_Observed,
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.7.3, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+# used a range of default values
+
+##################################
+# Running the support vector machine model
+# by setting the caret method to 'svmRadial'
+##################################
+set.seed(12345678)
+BAL_SVM_R_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                        y = MA_Train$diagnosis,
+                        method = "svmRadial",
+                        preProc = c("center", "scale"),
+                        tuneLength = 14,
+                        metric = "ROC",
+                        trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+BAL_SVM_R_Tune
+
+BAL_SVM_R_Tune$finalModel
+
+BAL_SVM_R_Tune$results
+
+(BAL_SVM_R_Train_ROCCurveAUC <- BAL_SVM_R_Tune$results[BAL_SVM_R_Tune$results$C==BAL_SVM_R_Tune$bestTune$C,
+                                                       c("ROC")])
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+BAL_SVM_R_Test <- data.frame(BAL_SVM_R_Test_Observed = MA_Test$diagnosis,
+                             BAL_SVM_R_Test_Predicted = predict(BAL_SVM_R_Tune,
+                                                                MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                                type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+BAL_SVM_R_Test_ROC <- roc(response = BAL_SVM_R_Test$BAL_SVM_R_Test_Observed,
+                          predictor = BAL_SVM_R_Test$BAL_SVM_R_Test_Predicted.M,
+                          levels = rev(levels(BAL_SVM_R_Test$BAL_SVM_R_Test_Observed)))
+
+(BAL_SVM_R_Test_AUROC <- auc(BAL_SVM_R_Test_ROC)[1])
 
 ```
 
@@ -1323,25 +1439,6 @@ BAL_LDA_Test_ROC <- roc(response = BAL_LDA_Test$BAL_LDA_Test_Observed,
 
 ```{r section_1.7.6, warning=FALSE, message=FALSE}
 
-##################################
-# Consolidating the resampling results
-# for the formulated models
-##################################
-(Consolidated_Resampling <- resamples(list(MBG_RF = MBG_RF_Tune,
-                                           MBG_BTREE = MBG_BTREE_Tune,
-                                           BAL_LDA = BAL_LDA_Tune)))
-
-summary(Consolidated_Resampling)
-
-##################################
-# Exploring the resampling results
-##################################
-bwplot(Consolidated_Resampling,
-       main = "Model Resampling Performance Comparison (Range)",
-       ylab = "Model",
-       pch=16,
-       cex=2,
-       layout=c(3,1))
 
 
 ```
@@ -1371,6 +1468,28 @@ bwplot(Consolidated_Resampling,
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.8, warning=FALSE, message=FALSE, dev='png'}
+
+##################################
+# Consolidating the resampling results
+# for the formulated models
+##################################
+(Consolidated_Resampling <- resamples(list(MBG_RF = MBG_RF_Tune,
+                                           MBG_BTREE = MBG_BTREE_Tune,
+                                           BAL_LDA = BAL_LDA_Tune,
+                                           BAL_CART = BAL_CART_Tune,
+                                           BAL_SVM_R = BAL_SVM_R_Tune)))
+
+summary(Consolidated_Resampling)
+
+##################################
+# Exploring the resampling results
+##################################
+bwplot(Consolidated_Resampling,
+       main = "Model Resampling Performance Comparison (Range)",
+       ylab = "Model",
+       pch=16,
+       cex=2,
+       layout=c(3,1))
 
 ```
 
