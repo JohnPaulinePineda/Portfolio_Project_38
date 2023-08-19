@@ -1,7 +1,7 @@
 ---
 title: 'Supervised Learning : Exploring Boosting, Bagging and Stacking Algorithms for Ensemble Learning'
 author: "John Pauline Pineda"
-date: "August 19, 2023"
+date: "August 23, 2023"
 output: 
   html_document:
     toc: true
@@ -91,6 +91,7 @@ library(stats)
 library(caretEnsemble)
 library(pROC)
 library(adabag)
+library(gbm)
 
 ##################################
 # Loading source and
@@ -990,7 +991,9 @@ RKFold_Control <- trainControl(method="repeatedcv",
 # Setting the conditions
 # for hyperparameter tuning
 ##################################
-AB_Grid = data.frame(mfinal = c(25,75,125), maxdepth = 6, coeflearn = "Breiman")
+AB_Grid = data.frame(mfinal = c(25,75,125), 
+                     maxdepth = 6, 
+                     coeflearn = "Breiman")
 
 ##################################
 # Running the adaptive boosting model
@@ -1067,6 +1070,75 @@ MBS_AB_Test_ROC <- roc(response = MBS_AB_Test$MBS_AB_Test_Observed,
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.5.2, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+GBM_Grid = data.frame(n.trees = c(200,400,600), 
+                      interaction.depth = 6, 
+                      shrinkage = 0.001,
+                      n.minobsinnode = 5)
+
+##################################
+# Running the stochastic gradient boosting model
+# by setting the caret method to 'gbm'
+##################################
+set.seed(12345678)
+MBS_GBM_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                 y = MA_Train$diagnosis,
+                 method = "gbm",
+                 tuneGrid = GBM_Grid,
+                 metric = "ROC",
+                 trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+MBS_GBM_Tune
+
+MBS_GBM_Tune$finalModel
+
+MBS_GBM_Tune$results
+
+(MBS_GBM_Train_ROCCurveAUC <- MBS_GBM_Tune$results[MBS_GBM_Tune$results$n.trees==MBS_GBM_Tune$bestTune$n.trees,
+                                                 c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+MBS_GBM_VarImp <- varImp(MBS_GBM_Tune, scale = TRUE)
+plot(MBS_GBM_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked VariGBMle Importance : Stochastic Gradient Boosting",
+     xlGBM="Scaled VariGBMle Importance Metrics",
+     ylGBM="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MBS_GBM_Test <- data.frame(MBS_GBM_Test_Observed = MA_Test$diagnosis,
+                          MBS_GBM_Test_Predicted = predict(MBS_GBM_Tune,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                          type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+MBS_GBM_Test_ROC <- roc(response = MBS_GBM_Test$MBS_GBM_Test_Observed,
+                       predictor = MBS_GBM_Test$MBS_GBM_Test_Predicted.M,
+                       levels = rev(levels(MBS_GBM_Test$MBS_GBM_Test_Observed)))
+
+(MBS_GBM_Test_AUROC <- auc(MBS_GBM_Test_ROC)[1])
+
 
 ```
 
@@ -1560,7 +1632,9 @@ BAL_KNN_Test_ROC <- roc(response = BAL_KNN_Test$BAL_KNN_Test_Observed,
 # Setting the conditions
 # for hyperparameter tuning
 ##################################
-NB_Grid = data.frame(usekernel = c(TRUE, FALSE), fL = 2, adjust = FALSE)
+NB_Grid = data.frame(usekernel = c(TRUE, FALSE), 
+                     fL = 2, 
+                     adjust = FALSE)
 
 ##################################
 # Running the naive bayes model
@@ -1663,6 +1737,7 @@ BAL_NB_Test_ROC <- roc(response = BAL_NB_Test$BAL_NB_Test_Observed,
 # for the formulated models
 ##################################
 (Consolidated_Resampling <- resamples(list(MBS_AB = MBS_AB_Tune,
+                                           MBS_GBM = MBS_GBM_Tune,
                                            MBG_RF = MBG_RF_Tune,
                                            MBG_BTREE = MBG_BTREE_Tune,
                                            BAL_LDA = BAL_LDA_Tune,
