@@ -115,7 +115,7 @@ summary(BreastCancer)
 # for the response variable
 ##################################
 BreastCancer$diagnosis <- factor(BreastCancer$diagnosis,
-                                 levels = c("B","M"))
+                                 levels = c("M","B"))
 
 ##################################
 # Formulating a data type assessment summary
@@ -988,75 +988,74 @@ RKFold_Control <- trainControl(method="repeatedcv",
                               repeats=5,
                               classProbs = TRUE)
 
-# ##################################
-# # Setting the conditions
-# # for hyperparameter tuning
-# ##################################
-# AB_Grid = expand.grid(mfinal = c(50,100,100),
-#                       maxdepth = c(4,5,6), 
-#                       coeflearn = "Breiman")
-# 
-# ##################################
-# # Running the adaptive boosting model
-# # by setting the caret method to 'AdaBoost.M1'
-# ##################################
-# set.seed(12345678)
-# MBS_AB_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
-#                  y = MA_Train$diagnosis,
-#                  method = "AdaBoost.M1",
-#                  tuneGrid = AB_Grid,
-#                  metric = "ROC",
-#                  trControl = RKFold_Control)
-# 
-# ##################################
-# # Reporting the cross-validation results
-# # for the train set
-# ##################################
-# MBS_AB_Tune
-# 
-# MBS_AB_Tune$finalModel
-# 
-# MBS_AB_Tune$results
-# 
-# (MBS_AB_Train_ROCCurveAUC <- MBS_AB_Tune$results[MBS_AB_Tune$results$mfinal==MBS_AB_Tune$bestTune$mfinal &
-#                                                  MBS_AB_Tune$results$maxdepth==MBS_AB_Tune$bestTune$maxdepth &
-#                                                  MBS_AB_Tune$results$coeflearn==MBS_AB_Tune$bestTune$coeflearn,
-#                                                  c("ROC")])
-# 
-# ##################################
-# # Identifying and plotting the
-# # best model predictors
-# ##################################
-# MBS_AB_VarImp <- varImp(MBS_AB_Tune, scale = TRUE)
-# plot(MBS_AB_VarImp,
-#      top=6,
-#      scales=list(y=list(cex = .95)),
-#      main="Ranked Variable Importance : Adaptive Boosting",
-#      xlab="Scaled Variable Importance Metrics",
-#      ylab="Predictors",
-#      cex=2,
-#      origin=0,
-#      alpha=0.45)
-# 
-# ##################################
-# # Independently evaluating the model
-# # on the test set
-# ##################################
-# MBS_AB_Test <- data.frame(MBS_AB_Test_Observed = MA_Test$diagnosis,
-#                           MBS_AB_Test_Predicted = predict(MBS_AB_Tune,
-#                                                           MA_Test[,!names(MA_Test) %in% c("diagnosis")],
-#                                                           type = "prob"))
-# 
-# ##################################
-# # Reporting the independent evaluation results
-# # for the test set
-# ##################################
-# MBS_AB_Test_ROC <- roc(response = MBS_AB_Test$MBS_AB_Test_Observed,
-#                        predictor = MBS_AB_Test$MBS_AB_Test_Predicted.M,
-#                        levels = rev(levels(MBS_AB_Test$MBS_AB_Test_Observed)))
-# 
-# (MBS_AB_Test_AUROC <- auc(MBS_AB_Test_ROC)[1])
-# 
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+AB_Grid = expand.grid(mfinal = c(50,100,100),
+                      maxdepth = c(4,5,6),
+                      coeflearn = "Breiman")
+
+##################################
+# Running the adaptive boosting model
+# by setting the caret method to 'AdaBoost.M1'
+##################################
+set.seed(12345678)
+MBS_AB_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                 y = MA_Train$diagnosis,
+                 method = "AdaBoost.M1",
+                 tuneGrid = AB_Grid,
+                 metric = "ROC",
+                 trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+MBS_AB_Tune
+
+MBS_AB_Tune$finalModel
+
+MBS_AB_Tune$results
+
+(MBS_AB_Train_AUROC <- MBS_AB_Tune$results[MBS_AB_Tune$results$mfinal==MBS_AB_Tune$bestTune$mfinal &
+                                           MBS_AB_Tune$results$maxdepth==MBS_AB_Tune$bestTune$maxdepth &
+                                           MBS_AB_Tune$results$coeflearn==MBS_AB_Tune$bestTune$coeflearn,
+                                           c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+MBS_AB_VarImp <- varImp(MBS_AB_Tune, scale = TRUE)
+plot(MBS_AB_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked Variable Importance : Adaptive Boosting",
+     xlab="Scaled Variable Importance Metrics",
+     ylab="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MBS_AB_Test <- data.frame(MBS_AB_Test_Observed = MA_Test$diagnosis,
+                          MBS_AB_Test_Predicted = predict(MBS_AB_Tune,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                          type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+MBS_AB_Test_ROC <- roc(response = MBS_AB_Test$MBS_AB_Test_Observed,
+                       predictor = MBS_AB_Test$MBS_AB_Test_Predicted.M,
+                       levels = rev(levels(MBS_AB_Test$MBS_AB_Test_Observed)))
+
+(MBS_AB_Test_AUROC <- auc(MBS_AB_Test_ROC)[1])
 
 ```
 
@@ -1072,76 +1071,76 @@ RKFold_Control <- trainControl(method="repeatedcv",
 
 ```{r section_1.5.2, warning=FALSE, message=FALSE}
 
-# ##################################
-# # Setting the conditions
-# # for hyperparameter tuning
-# ##################################
-# GBM_Grid = expand.grid(n.trees = 500, 
-#                       interaction.depth = c(4,5,6), 
-#                       shrinkage = c(0.1,0.01,0.001),
-#                       n.minobsinnode = c(5, 10, 15))
-# 
-# ##################################
-# # Running the stochastic gradient boosting model
-# # by setting the caret method to 'gbm'
-# ##################################
-# set.seed(12345678)
-# MBS_GBM_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
-#                  y = MA_Train$diagnosis,
-#                  method = "gbm",
-#                  tuneGrid = GBM_Grid,
-#                  metric = "ROC",
-#                  trControl = RKFold_Control)
-# 
-# ##################################
-# # Reporting the cross-validation results
-# # for the train set
-# ##################################
-# MBS_GBM_Tune
-# 
-# MBS_GBM_Tune$finalModel
-# 
-# MBS_GBM_Tune$results
-# 
-# (MBS_GBM_Train_ROCCurveAUC <- MBS_GBM_Tune$results[MBS_GBM_Tune$results$n.trees==MBS_GBM_Tune$bestTune$n.trees &
-#                                                    MBS_GBM_Tune$results$shrinkage==MBS_GBM_Tune$bestTune$shrinkage &
-#                                                    MBS_GBM_Tune$results$n.minobsinnode==MBS_GBM_Tune$bestTune$n.minobsinnode &
-#                                                    MBS_GBM_Tune$results$interaction.depth==MBS_GBM_Tune$bestTune$interaction.depth,
-#                                                  c("ROC")])
-# 
-# ##################################
-# # Identifying and plotting the
-# # best model predictors
-# ##################################
-# MBS_GBM_VarImp <- varImp(MBS_GBM_Tune, scale = TRUE)
-# plot(MBS_GBM_VarImp,
-#      top=6,
-#      scales=list(y=list(cex = .95)),
-#      main="Ranked VariGBMle Importance : Stochastic Gradient Boosting",
-#      xlGBM="Scaled Variable Importance Metrics",
-#      ylGBM="Predictors",
-#      cex=2,
-#      origin=0,
-#      alpha=0.45)
-# 
-# ##################################
-# # Independently evaluating the model
-# # on the test set
-# ##################################
-# MBS_GBM_Test <- data.frame(MBS_GBM_Test_Observed = MA_Test$diagnosis,
-#                           MBS_GBM_Test_Predicted = predict(MBS_GBM_Tune,
-#                                                           MA_Test[,!names(MA_Test) %in% c("diagnosis")],
-#                                                           type = "prob"))
-# 
-# ##################################
-# # Reporting the independent evaluation results
-# # for the test set
-# ##################################
-# MBS_GBM_Test_ROC <- roc(response = MBS_GBM_Test$MBS_GBM_Test_Observed,
-#                        predictor = MBS_GBM_Test$MBS_GBM_Test_Predicted.M,
-#                        levels = rev(levels(MBS_GBM_Test$MBS_GBM_Test_Observed)))
-# 
-# (MBS_GBM_Test_AUROC <- auc(MBS_GBM_Test_ROC)[1])
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+GBM_Grid = expand.grid(n.trees = 500,
+                      interaction.depth = c(4,5,6),
+                      shrinkage = c(0.1,0.01,0.001),
+                      n.minobsinnode = c(5, 10, 15))
+
+##################################
+# Running the stochastic gradient boosting model
+# by setting the caret method to 'gbm'
+##################################
+set.seed(12345678)
+MBS_GBM_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                 y = MA_Train$diagnosis,
+                 method = "gbm",
+                 tuneGrid = GBM_Grid,
+                 metric = "ROC",
+                 trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+MBS_GBM_Tune
+
+MBS_GBM_Tune$finalModel
+
+MBS_GBM_Tune$results
+
+(MBS_GBM_Train_AUROC <- MBS_GBM_Tune$results[MBS_GBM_Tune$results$n.trees==MBS_GBM_Tune$bestTune$n.trees &
+                                             MBS_GBM_Tune$results$shrinkage==MBS_GBM_Tune$bestTune$shrinkage &
+                                             MBS_GBM_Tune$results$n.minobsinnode==MBS_GBM_Tune$bestTune$n.minobsinnode &
+                                             MBS_GBM_Tune$results$interaction.depth==MBS_GBM_Tune$bestTune$interaction.depth,
+                                             c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+MBS_GBM_VarImp <- varImp(MBS_GBM_Tune, scale = TRUE)
+plot(MBS_GBM_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked VariGBMle Importance : Stochastic Gradient Boosting",
+     xlGBM="Scaled Variable Importance Metrics",
+     ylGBM="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MBS_GBM_Test <- data.frame(MBS_GBM_Test_Observed = MA_Test$diagnosis,
+                          MBS_GBM_Test_Predicted = predict(MBS_GBM_Tune,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                          type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+MBS_GBM_Test_ROC <- roc(response = MBS_GBM_Test$MBS_GBM_Test_Observed,
+                       predictor = MBS_GBM_Test$MBS_GBM_Test_Predicted.M,
+                       levels = rev(levels(MBS_GBM_Test$MBS_GBM_Test_Observed)))
+
+(MBS_GBM_Test_AUROC <- auc(MBS_GBM_Test_ROC)[1])
 
 ```
 
@@ -1157,82 +1156,82 @@ RKFold_Control <- trainControl(method="repeatedcv",
 
 ```{r section_1.5.3, warning=FALSE, message=FALSE}
 
-# ##################################
-# # Setting the conditions
-# # for hyperparameter tuning
-# ##################################
-# XGB_Grid = expand.grid(nrounds = 500, 
-#                       max_depth = c(4,5,6), 
-#                       eta = c(0.2,0.3,0.4),
-#                       gamma = c(0.1,0.01,0.001),
-#                       colsample_bytree = 1, 
-#                       min_child_weight = 1,
-#                       subsample = 1)
-# 
-# ##################################
-# # Running the extreme gradient boosting model
-# # by setting the caret method to 'xgbTree'
-# ##################################
-# set.seed(12345678)
-# MBS_XGB_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
-#                  y = MA_Train$diagnosis,
-#                  method = "xgbTree",
-#                  tuneGrid = XGB_Grid,
-#                  metric = "ROC",
-#                  trControl = RKFold_Control)
-# 
-# ##################################
-# # Reporting the cross-validation results
-# # for the train set
-# ##################################
-# MBS_XGB_Tune
-# 
-# MBS_XGB_Tune$finalModel
-# 
-# MBS_XGB_Tune$results
-# 
-# (MBS_XGB_Train_ROCCurveAUC <- MBS_XGB_Tune$results[MBS_XGB_Tune$results$nrounds==MBS_XGB_Tune$bestTune$nrounds &
-#                                                    MBS_XGB_Tune$results$max_depth==MBS_XGB_Tune$bestTune$max_depth &    
-#                                                    MBS_XGB_Tune$results$eta==MBS_XGB_Tune$bestTune$eta &    
-#                                                    MBS_XGB_Tune$results$gamma==MBS_XGB_Tune$bestTune$gamma &    
-#                                                    MBS_XGB_Tune$results$colsample_bytree==MBS_XGB_Tune$bestTune$colsample_bytree &    
-#                                                    MBS_XGB_Tune$results$min_child_weight==MBS_XGB_Tune$bestTune$min_child_weight &    
-#                                                    MBS_XGB_Tune$results$subsample==MBS_XGB_Tune$bestTune$subsample,
-#                                                  c("ROC")])
-# 
-# ##################################
-# # Identifying and plotting the
-# # best model predictors
-# ##################################
-# MBS_XGB_VarImp <- varImp(MBS_XGB_Tune, scale = TRUE)
-# plot(MBS_XGB_VarImp,
-#      top=6,
-#      scales=list(y=list(cex = .95)),
-#      main="Ranked VariXGBle Importance : Extreme Gradient Boosting",
-#      xlXGB="Scaled Variable Importance Metrics",
-#      ylXGB="Predictors",
-#      cex=2,
-#      origin=0,
-#      alpha=0.45)
-# 
-# ##################################
-# # Independently evaluating the model
-# # on the test set
-# ##################################
-# MBS_XGB_Test <- data.frame(MBS_XGB_Test_Observed = MA_Test$diagnosis,
-#                           MBS_XGB_Test_Predicted = predict(MBS_XGB_Tune,
-#                                                           MA_Test[,!names(MA_Test) %in% c("diagnosis")],
-#                                                           type = "prob"))
-# 
-# ##################################
-# # Reporting the independent evaluation results
-# # for the test set
-# ##################################
-# MBS_XGB_Test_ROC <- roc(response = MBS_XGB_Test$MBS_XGB_Test_Observed,
-#                        predictor = MBS_XGB_Test$MBS_XGB_Test_Predicted.M,
-#                        levels = rev(levels(MBS_XGB_Test$MBS_XGB_Test_Observed)))
-# 
-# (MBS_XGB_Test_AUROC <- auc(MBS_XGB_Test_ROC)[1])
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+XGB_Grid = expand.grid(nrounds = 500,
+                      max_depth = c(4,5,6),
+                      eta = c(0.2,0.3,0.4),
+                      gamma = c(0.1,0.01,0.001),
+                      colsample_bytree = 1,
+                      min_child_weight = 1,
+                      subsample = 1)
+
+##################################
+# Running the extreme gradient boosting model
+# by setting the caret method to 'xgbTree'
+##################################
+set.seed(12345678)
+MBS_XGB_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                 y = MA_Train$diagnosis,
+                 method = "xgbTree",
+                 tuneGrid = XGB_Grid,
+                 metric = "ROC",
+                 trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+MBS_XGB_Tune
+
+MBS_XGB_Tune$finalModel
+
+MBS_XGB_Tune$results
+
+(MBS_XGB_Train_AUROC <- MBS_XGB_Tune$results[MBS_XGB_Tune$results$nrounds==MBS_XGB_Tune$bestTune$nrounds &
+                                             MBS_XGB_Tune$results$max_depth==MBS_XGB_Tune$bestTune$max_depth &
+                                             MBS_XGB_Tune$results$eta==MBS_XGB_Tune$bestTune$eta &
+                                             MBS_XGB_Tune$results$gamma==MBS_XGB_Tune$bestTune$gamma &
+                                             MBS_XGB_Tune$results$colsample_bytree==MBS_XGB_Tune$bestTune$colsample_bytree &
+                                             MBS_XGB_Tune$results$min_child_weight==MBS_XGB_Tune$bestTune$min_child_weight &
+                                             MBS_XGB_Tune$results$subsample==MBS_XGB_Tune$bestTune$subsample,
+                                             c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+MBS_XGB_VarImp <- varImp(MBS_XGB_Tune, scale = TRUE)
+plot(MBS_XGB_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked VariXGBle Importance : Extreme Gradient Boosting",
+     xlXGB="Scaled Variable Importance Metrics",
+     ylXGB="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MBS_XGB_Test <- data.frame(MBS_XGB_Test_Observed = MA_Test$diagnosis,
+                          MBS_XGB_Test_Predicted = predict(MBS_XGB_Tune,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                          type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+MBS_XGB_Test_ROC <- roc(response = MBS_XGB_Test$MBS_XGB_Test_Observed,
+                       predictor = MBS_XGB_Test$MBS_XGB_Test_Predicted.M,
+                       levels = rev(levels(MBS_XGB_Test$MBS_XGB_Test_Observed)))
+
+(MBS_XGB_Test_AUROC <- auc(MBS_XGB_Test_ROC)[1])
 
 ```
 
@@ -1250,70 +1249,70 @@ RKFold_Control <- trainControl(method="repeatedcv",
 
 ```{r section_1.6.1, warning=FALSE, message=FALSE}
 
-# ##################################
-# # Setting the conditions
-# # for hyperparameter tuning
-# ##################################
-# RF_Grid = data.frame(mtry = c(25,75,125))
-# 
-# ##################################
-# # Running the random forest model
-# # by setting the caret method to 'rf'
-# ##################################
-# set.seed(12345678)
-# MBG_RF_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
-#                  y = MA_Train$diagnosis,
-#                  method = "rf",
-#                  tuneGrid = RF_Grid,
-#                  metric = "ROC",
-#                  trControl = RKFold_Control)
-# 
-# ##################################
-# # Reporting the cross-validation results
-# # for the train set
-# ##################################
-# MBG_RF_Tune
-# 
-# MBG_RF_Tune$finalModel
-# 
-# MBG_RF_Tune$results
-# 
-# (MBG_RF_Train_ROCCurveAUC <- MBG_RF_Tune$results[MBG_RF_Tune$results$mtry==MBG_RF_Tune$bestTune$mtry,
-#                                                  c("ROC")])
-# 
-# ##################################
-# # Identifying and plotting the
-# # best model predictors
-# ##################################
-# MBG_RF_VarImp <- varImp(MBG_RF_Tune, scale = TRUE)
-# plot(MBG_RF_VarImp,
-#      top=6,
-#      scales=list(y=list(cex = .95)),
-#      main="Ranked Variable Importance : Random Forest",
-#      xlab="Scaled Variable Importance Metrics",
-#      ylab="Predictors",
-#      cex=2,
-#      origin=0,
-#      alpha=0.45)
-# 
-# ##################################
-# # Independently evaluating the model
-# # on the test set
-# ##################################
-# MBG_RF_Test <- data.frame(MBG_RF_Test_Observed = MA_Test$diagnosis,
-#                           MBG_RF_Test_Predicted = predict(MBG_RF_Tune,
-#                                                           MA_Test[,!names(MA_Test) %in% c("diagnosis")],
-#                                                           type = "prob"))
-# 
-# ##################################
-# # Reporting the independent evaluation results
-# # for the test set
-# ##################################
-# MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
-#                        predictor = MBG_RF_Test$MBG_RF_Test_Predicted.M,
-#                        levels = rev(levels(MBG_RF_Test$MBG_RF_Test_Observed)))
-# 
-# (MBG_RF_Test_AUROC <- auc(MBG_RF_Test_ROC)[1])
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+RF_Grid = data.frame(mtry = c(25,75,125))
+
+##################################
+# Running the random forest model
+# by setting the caret method to 'rf'
+##################################
+set.seed(12345678)
+MBG_RF_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                 y = MA_Train$diagnosis,
+                 method = "rf",
+                 tuneGrid = RF_Grid,
+                 metric = "ROC",
+                 trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+MBG_RF_Tune
+
+MBG_RF_Tune$finalModel
+
+MBG_RF_Tune$results
+
+(MBG_RF_Train_AUROC <- MBG_RF_Tune$results[MBG_RF_Tune$results$mtry==MBG_RF_Tune$bestTune$mtry,
+                                           c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+MBG_RF_VarImp <- varImp(MBG_RF_Tune, scale = TRUE)
+plot(MBG_RF_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked Variable Importance : Random Forest",
+     xlab="Scaled Variable Importance Metrics",
+     ylab="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MBG_RF_Test <- data.frame(MBG_RF_Test_Observed = MA_Test$diagnosis,
+                          MBG_RF_Test_Predicted = predict(MBG_RF_Tune,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                          type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
+                       predictor = MBG_RF_Test$MBG_RF_Test_Predicted.M,
+                       levels = rev(levels(MBG_RF_Test$MBG_RF_Test_Observed)))
+
+(MBG_RF_Test_AUROC <- auc(MBG_RF_Test_ROC)[1])
 
 ```
 
@@ -1329,69 +1328,69 @@ RKFold_Control <- trainControl(method="repeatedcv",
 
 ```{r section_1.6.2, warning=FALSE, message=FALSE}
 
-# ##################################
-# # Setting the conditions
-# # for hyperparameter tuning
-# ##################################
-# # No hyperparameter tuning process required
-# 
-# ##################################
-# # Running the bagged CART model
-# # by setting the caret method to 'treebag'
-# ##################################
-# set.seed(12345678)
-# MBG_BTREE_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
-#                         y = MA_Train$diagnosis,
-#                         method = "treebag",
-#                         nbagg = 50,
-#                         metric = "ROC",
-#                         trControl = RKFold_Control)
-# 
-# ##################################
-# # Reporting the cross-validation results
-# # for the train set
-# ##################################
-# MBG_BTREE_Tune
-# 
-# MBG_BTREE_Tune$finalModel
-# 
-# MBG_BTREE_Tune$results
-# 
-# (MBG_BTREE_Train_ROCCurveAUC <- MBG_BTREE_Tune$results$ROC)
-# 
-# ##################################
-# # Identifying and plotting the
-# # best model predictors
-# ##################################
-# MBG_BTREE_VarImp <- varImp(MBG_BTREE_Tune, scale = TRUE)
-# plot(MBG_BTREE_VarImp,
-#      top=6,
-#      scales=list(y=list(cex = .95)),
-#      main="Ranked Variable Importance : Bagged Classification and Regression Trees",
-#      xlab="Scaled Variable Importance Metrics",
-#      ylab="Predictors",
-#      cex=2,
-#      origin=0,
-#      alpha=0.45)
-# 
-# ##################################
-# # Independently evaluating the model
-# # on the test set
-# ##################################
-# MBG_BTREE_Test <- data.frame(MBG_BTREE_Test_Observed = MA_Test$diagnosis,
-#                              MBG_BTREE_Test_Predicted = predict(MBG_BTREE_Tune,
-#                                                                 MA_Test[,!names(MA_Test) %in% c("diagnosis")],
-#                                                                 type = "prob"))
-# 
-# ##################################
-# # Reporting the independent evaluation results
-# # for the test set
-# ##################################
-# MBG_BTREE_Test_ROC <- roc(response = MBG_BTREE_Test$MBG_BTREE_Test_Observed,
-#                           predictor = MBG_BTREE_Test$MBG_BTREE_Test_Predicted.M,
-#                           levels = rev(levels(MBG_BTREE_Test$MBG_BTREE_Test_Observed)))
-# 
-# (MBG_BTREE_Test_AUROC <- auc(MBG_BTREE_Test_ROC)[1])
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+# No hyperparameter tuning process required
+
+##################################
+# Running the bagged CART model
+# by setting the caret method to 'treebag'
+##################################
+set.seed(12345678)
+MBG_BTREE_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                        y = MA_Train$diagnosis,
+                        method = "treebag",
+                        nbagg = 50,
+                        metric = "ROC",
+                        trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+MBG_BTREE_Tune
+
+MBG_BTREE_Tune$finalModel
+
+MBG_BTREE_Tune$results
+
+(MBG_BTREE_Train_AUROC <- MBG_BTREE_Tune$results$ROC)
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+MBG_BTREE_VarImp <- varImp(MBG_BTREE_Tune, scale = TRUE)
+plot(MBG_BTREE_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked Variable Importance : Bagged Classification and Regression Trees",
+     xlab="Scaled Variable Importance Metrics",
+     ylab="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MBG_BTREE_Test <- data.frame(MBG_BTREE_Test_Observed = MA_Test$diagnosis,
+                             MBG_BTREE_Test_Predicted = predict(MBG_BTREE_Tune,
+                                                                MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                                type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+MBG_BTREE_Test_ROC <- roc(response = MBG_BTREE_Test$MBG_BTREE_Test_Observed,
+                          predictor = MBG_BTREE_Test$MBG_BTREE_Test_Predicted.M,
+                          levels = rev(levels(MBG_BTREE_Test$MBG_BTREE_Test_Observed)))
+
+(MBG_BTREE_Test_AUROC <- auc(MBG_BTREE_Test_ROC)[1])
 
 ```
 
@@ -1437,7 +1436,7 @@ BAL_LDA_Tune$finalModel
 
 BAL_LDA_Tune$results
 
-(BAL_LDA_Train_ROCCurveAUC <- BAL_LDA_Tune$results$ROC)
+(BAL_LDA_Train_AUROC <- BAL_LDA_Tune$results$ROC)
 
 ##################################
 # Identifying and plotting the
@@ -1462,6 +1461,8 @@ BAL_LDA_Test <- data.frame(BAL_LDA_Test_Observed = MA_Test$diagnosis,
                            BAL_LDA_Test_Predicted = predict(BAL_LDA_Tune,
                                                             MA_Test[,!names(MA_Test) %in% c("diagnosis")],
                                                             type = "prob"))
+
+BAL_LDA_Test
 
 ##################################
 # Reporting the independent evaluation results
@@ -1515,7 +1516,7 @@ BAL_CART_Tune$finalModel
 
 BAL_CART_Tune$results
 
-(BAL_CART_Train_ROCCurveAUC <- BAL_CART_Tune$results[BAL_CART_Tune$results$cp==BAL_CART_Tune$bestTune$cp,
+(BAL_CART_Train_AUROC <- BAL_CART_Tune$results[BAL_CART_Tune$results$cp==BAL_CART_Tune$bestTune$cp,
                                                      c("ROC")])
 
 ##################################
@@ -1541,6 +1542,8 @@ BAL_CART_Test <- data.frame(BAL_CART_Test_Observed = MA_Test$diagnosis,
                             BAL_CART_Test_Predicted = predict(BAL_CART_Tune,
                                                               MA_Test[,!names(MA_Test) %in% c("diagnosis")],
                                                               type = "prob"))
+
+BAL_CART_Test
 
 ##################################
 # Reporting the independent evaluation results
@@ -1595,7 +1598,7 @@ BAL_SVM_R_Tune$finalModel
 
 BAL_SVM_R_Tune$results
 
-(BAL_SVM_R_Train_ROCCurveAUC <- BAL_SVM_R_Tune$results[BAL_SVM_R_Tune$results$C==BAL_SVM_R_Tune$bestTune$C,
+(BAL_SVM_R_Train_AUROC <- BAL_SVM_R_Tune$results[BAL_SVM_R_Tune$results$C==BAL_SVM_R_Tune$bestTune$C,
                                                        c("ROC")])
 
 ##################################
@@ -1612,6 +1615,8 @@ BAL_SVM_R_Test <- data.frame(BAL_SVM_R_Test_Observed = MA_Test$diagnosis,
                              BAL_SVM_R_Test_Predicted = predict(BAL_SVM_R_Tune,
                                                                 MA_Test[,!names(MA_Test) %in% c("diagnosis")],
                                                                 type = "prob"))
+
+BAL_SVM_R_Test
 
 ##################################
 # Reporting the independent evaluation results
@@ -1666,7 +1671,7 @@ BAL_KNN_Tune$finalModel
 
 BAL_KNN_Tune$results
 
-(BAL_KNN_Train_ROCCurveAUC <- BAL_KNN_Tune$results[BAL_KNN_Tune$results$k==BAL_KNN_Tune$bestTune$k,
+(BAL_KNN_Train_AUROC <- BAL_KNN_Tune$results[BAL_KNN_Tune$results$k==BAL_KNN_Tune$bestTune$k,
                                                    c("ROC")])
 
 ##################################
@@ -1683,6 +1688,8 @@ BAL_KNN_Test <- data.frame(BAL_KNN_Test_Observed = MA_Test$diagnosis,
                            BAL_KNN_Test_Predicted = predict(BAL_KNN_Tune,
                                                             MA_Test[,!names(MA_Test) %in% c("diagnosis")],
                                                             type = "prob"))
+
+BAL_KNN_Test
 
 ##################################
 # Reporting the independent evaluation results
@@ -1738,7 +1745,7 @@ BAL_NB_Tune$finalModel
 
 BAL_NB_Tune$results
 
-(BAL_NB_Train_ROCCurveAUC <- BAL_NB_Tune$results[BAL_NB_Tune$results$usekernel==BAL_NB_Tune$bestTune$usekernel &
+(BAL_NB_Train_AUROC <- BAL_NB_Tune$results[BAL_NB_Tune$results$usekernel==BAL_NB_Tune$bestTune$usekernel &
                                                  BAL_NB_Tune$results$adjust==BAL_NB_Tune$bestTune$adjust &
                                                  BAL_NB_Tune$results$fL==BAL_NB_Tune$bestTune$fL,
                                                  c("ROC")])
@@ -1757,6 +1764,8 @@ BAL_NB_Test <- data.frame(BAL_NB_Test_Observed = MA_Test$diagnosis,
                           BAL_NB_Test_Predicted = predict(BAL_NB_Tune,
                                                           MA_Test[,!names(MA_Test) %in% c("diagnosis")],
                                                           type = "prob"))
+
+BAL_NB_Test
 
 ##################################
 # Reporting the independent evaluation results
@@ -1807,6 +1816,8 @@ BAL_LIST <- caretList(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
                                                tuneGrid=data.frame(usekernel=FALSE,fL = 2,adjust = FALSE)))             
                         )
 
+BAL_LIST
+
 ##################################
 # Comparing the base learners
 # with optimal hyperparameters
@@ -1827,12 +1838,35 @@ BAL_LIST_COR <- modelCor(resamples(BAL_LIST))
 # using the base learners
 ##################################
 set.seed(12345678)
-ENL <- caretEnsemble(
-  BAL_LIST,
-  metric="ROC",
-  trControl=RKFold_Control)
+ENL <- caretEnsemble(BAL_LIST,
+                     metric="ROC",
+                     trControl=RKFold_Control)
+print(ENL)
 
-summary(ENL)
+(ENL_Train_AUROC <- ENL$ens_model$results$ROC)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+ENL_Test <- data.frame(ENL_Test_Observed = MA_Test$diagnosis,
+                       ENL_Test_Predicted = predict(ENL,
+                                                    MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                    type = "prob"))
+
+ENL_Test$ENL_Test_Predicted.M <- ENL_Test$ENL_Test_Predicted
+
+ENL_Test
+
+#################################
+# Reporting the independent evaluation results
+# for the test set
+#################################
+ENL_Test_ROC <- roc(response = ENL_Test$ENL_Test_Observed,
+                    predictor = ENL_Test$ENL_Test_Predicted.M,
+                    levels = rev(levels(ENL_Test$ENL_Test_Observed)))
+
+(ENL_Test_AUROC <- auc(ENL_Test_ROC)[1])
 
 ```
 
@@ -1848,6 +1882,43 @@ summary(ENL)
 
 ```{r section_1.7.7, warning=FALSE, message=FALSE}
 
+##################################
+# Formulating a stacked model
+# using the base learners
+# and a linear regression meta-model
+##################################
+set.seed(12345678)
+MEL_LR <- caretStack(BAL_LIST,
+                     metric="ROC",
+                     trControl=RKFold_Control,
+                     method="glm")
+print(MEL_LR)
+
+(MEL_LR_Train_AUROC <- MEL_LR$ens_model$results$ROC)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MEL_LR_Test <- data.frame(MEL_LR_Test_Observed = MA_Test$diagnosis,
+                          MEL_LR_Test_Predicted = predict(MEL_LR,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                          type = "prob"))
+
+MEL_LR_Test$MEL_LR_Test_Predicted.M <- MEL_LR_Test$MEL_LR_Test_Predicted
+
+MEL_LR_Test
+
+#################################
+# Reporting the independent evaluation results
+# for the test set
+#################################
+MEL_LR_Test_ROC <- roc(response = MEL_LR_Test$MEL_LR_Test_Observed,
+                    predictor = MEL_LR_Test$MEL_LR_Test_Predicted.M,
+                    levels = rev(levels(MEL_LR_Test$MEL_LR_Test_Observed)))
+
+(MEL_LR_Test_AUROC <- auc(MEL_LR_Test_ROC)[1])
+
 ```
 
 </details>
@@ -1861,6 +1932,43 @@ summary(ENL)
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
 
 ```{r section_1.7.8, warning=FALSE, message=FALSE}
+
+##################################
+# Formulating a stacked model
+# using the base learners
+# and a random forest meta-model
+##################################
+set.seed(12345678)
+MEL_RF <- caretStack(BAL_LIST,
+                     metric="ROC",
+                     trControl=RKFold_Control,
+                     method="rf")
+print(MEL_RF)
+
+(MEL_RF_Train_AUROC <- max(MEL_RF$ens_model$results$ROC))
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MEL_RF_Test <- data.frame(MEL_RF_Test_Observed = MA_Test$diagnosis,
+                          MEL_RF_Test_Predicted = predict(MEL_RF,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                          type = "prob"))
+
+MEL_RF_Test$MEL_RF_Test_Predicted.M <- MEL_RF_Test$MEL_RF_Test_Predicted
+
+MEL_RF_Test
+
+#################################
+# Reporting the independent evaluation results
+# for the test set
+#################################
+MEL_RF_Test_ROC <- roc(response = MEL_RF_Test$MEL_RF_Test_Observed,
+                    predictor = MEL_RF_Test$MEL_RF_Test_Predicted.M,
+                    levels = rev(levels(MEL_RF_Test$MEL_RF_Test_Observed)))
+
+(MEL_RF_Test_AUROC <- auc(MEL_RF_Test_ROC)[1])
 
 ```
 
@@ -1876,31 +1984,94 @@ summary(ENL)
 
 ```{r section_1.8, warning=FALSE, message=FALSE, dev='png'}
 
-# ##################################
-# # Consolidating the resampling results
-# # for the formulated models
-# ##################################
-# (Consolidated_Resampling <- resamples(list(MBS_AB = MBS_AB_Tune,
-#                                            MBS_GBM = MBS_GBM_Tune,
-#                                            MBS_XGB = MBS_XGB_Tune,
-#                                            MBG_RF = MBG_RF_Tune,
-#                                            MBG_BTREE = MBG_BTREE_Tune,
-#                                            BAL_LDA = BAL_LDA_Tune,
-#                                            BAL_CART = BAL_CART_Tune,
-#                                            BAL_KNN = BAL_KNN_Tune,
-#                                            BAL_NB = BAL_NB_Tune)))
-# 
-# summary(Consolidated_Resampling)
-# 
-# ##################################
-# # Exploring the resampling results
-# ##################################
-# bwplot(Consolidated_Resampling,
-#        main = "Model Resampling Performance Comparison (Range)",
-#        ylab = "Model",
-#        pch=16,
-#        cex=2,
-#        layout=c(3,1))
+##################################
+# Consolidating the resampling results
+# for the formulated individual models
+##################################
+(Consolidated_Resampling <- resamples(list(MBS_AB = MBS_AB_Tune,
+                                           MBS_GBM = MBS_GBM_Tune,
+                                           MBS_XGB = MBS_XGB_Tune,
+                                           MBG_RF = MBG_RF_Tune,
+                                           MBG_BTREE = MBG_BTREE_Tune,
+                                           BAL_LDA = BAL_LDA_Tune,
+                                           BAL_CART = BAL_CART_Tune,
+                                           BAL_KNN = BAL_KNN_Tune,
+                                           BAL_NB = BAL_NB_Tune)))
+
+summary(Consolidated_Resampling)
+
+##################################
+# Exploring the resampling results
+# for the formulated individual models
+##################################
+bwplot(Consolidated_Resampling,
+       main = "Model Resampling Performance Comparison (Range)",
+       ylab = "Model",
+       pch=16,
+       cex=2,
+       layout=c(3,1))
+
+##################################
+# Consolidating the train and test AUROC
+# for the formulated individual models
+# together with the ensemble and stacked models
+##################################
+
+Model <- c('MBS_AB','MBS_GBM','MBS_XGB',
+           'MBG_RF','MBG_BTREE',
+           'BAL_LDA','BAL_CART','BAL_SVM_R','BAL_KNN','BAL_NB',
+           'ENL','MEL_LR','MEL_RF',
+           'MBS_AB','MBS_GBM','MBS_XGB',
+           'MBG_RF','MBG_BTREE',
+           'BAL_LDA','BAL_CART','BAL_SVM_R','BAL_KNN','BAL_NB',
+           'ENL','MEL_LR','MEL_RF')
+
+Set <- c(rep('Cross-Validation',13),rep('Test',13))
+
+AUROC <- c(MBS_AB_Train_AUROC,MBS_GBM_Train_AUROC,MBS_XGB_Train_AUROC,
+           MBG_RF_Train_AUROC,MBG_BTREE_Train_AUROC,
+           BAL_LDA_Train_AUROC,BAL_CART_Train_AUROC,BAL_SVM_R_Train_AUROC,BAL_KNN_Train_AUROC,BAL_NB_Train_AUROC,
+           ENL_Train_AUROC,MEL_LR_Train_AUROC,MEL_RF_Train_AUROC,
+           MBS_AB_Test_AUROC,MBS_GBM_Test_AUROC,MBS_XGB_Test_AUROC,
+           MBG_RF_Test_AUROC,MBG_BTREE_Test_AUROC,
+           BAL_LDA_Test_AUROC,BAL_CART_Test_AUROC,BAL_SVM_R_Test_AUROC,BAL_KNN_Test_AUROC,BAL_NB_Test_AUROC,
+           ENL_Test_AUROC,MEL_LR_Test_AUROC,MEL_RF_Test_AUROC)
+
+AUROC_Summary <- as.data.frame(cbind(Model,Set,AUROC))
+
+AUROC_Summary$AUROC <- as.numeric(as.character(AUROC_Summary$AUROC))
+AUROC_Summary$Set <- factor(AUROC_Summary$Set,
+                            levels = c("Cross-Validation",
+                                       "Test"))
+AUROC_Summary$Model <- factor(AUROC_Summary$Model,
+                              levels = c('MBS_AB',
+                                         'MBS_GBM',
+                                         'MBS_XGB',
+                                         'MBG_RF',
+                                         'MBG_BTREE',
+                                         'BAL_LDA',
+                                         'BAL_CART',
+                                         'BAL_SVM_R',
+                                         'BAL_KNN',
+                                         'BAL_NB',
+                                         'ENL',
+                                         'MEL_LR',
+                                         'MEL_RF'))
+
+print(AUROC_Summary, row.names=FALSE)
+
+(AUROC_Plot <- dotplot(Model ~ AUROC,
+                           data = AUROC_Summary,
+                           groups = Set,
+                           main = "Classification Model Performance Comparison",
+                           ylab = "Model",
+                           xlab = "AUROC",
+                           auto.key = list(adj = 1),
+                           type=c("p", "h"),
+                           origin = 0,
+                           alpha = 0.45,
+                           pch = 16,
+                           cex = 2))
 
 ```
 
