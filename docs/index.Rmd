@@ -992,9 +992,9 @@ RKFold_Control <- trainControl(method="repeatedcv",
 # Setting the conditions
 # for hyperparameter tuning
 ##################################
-AB_Grid = data.frame(mfinal = c(25,75,125), 
-                     maxdepth = 6, 
-                     coeflearn = "Breiman")
+AB_Grid = expand.grid(mfinal = c(50,100,100),
+                      maxdepth = c(4,5,6), 
+                      coeflearn = "Breiman")
 
 ##################################
 # Running the adaptive boosting model
@@ -1076,10 +1076,10 @@ MBS_AB_Test_ROC <- roc(response = MBS_AB_Test$MBS_AB_Test_Observed,
 # Setting the conditions
 # for hyperparameter tuning
 ##################################
-GBM_Grid = data.frame(n.trees = 500, 
-                      interaction.depth = 6, 
-                      shrinkage = c(0.10,0.01,0.001),
-                      n.minobsinnode = 5)
+GBM_Grid = expand.grid(n.trees = 500, 
+                      interaction.depth = c(4,5,6), 
+                      shrinkage = c(0.1,0.01,0.001),
+                      n.minobsinnode = c(5, 10, 15))
 
 ##################################
 # Running the stochastic gradient boosting model
@@ -1103,7 +1103,10 @@ MBS_GBM_Tune$finalModel
 
 MBS_GBM_Tune$results
 
-(MBS_GBM_Train_ROCCurveAUC <- MBS_GBM_Tune$results[MBS_GBM_Tune$results$shrinkage==MBS_GBM_Tune$bestTune$shrinkage,
+(MBS_GBM_Train_ROCCurveAUC <- MBS_GBM_Tune$results[MBS_GBM_Tune$results$n.trees==MBS_GBM_Tune$bestTune$n.trees &
+                                                   MBS_GBM_Tune$results$shrinkage==MBS_GBM_Tune$bestTune$shrinkage &
+                                                   MBS_GBM_Tune$results$n.minobsinnode==MBS_GBM_Tune$bestTune$n.minobsinnode &
+                                                   MBS_GBM_Tune$results$interaction.depth==MBS_GBM_Tune$bestTune$interaction.depth,
                                                  c("ROC")])
 
 ##################################
@@ -1159,9 +1162,9 @@ MBS_GBM_Test_ROC <- roc(response = MBS_GBM_Test$MBS_GBM_Test_Observed,
 # Setting the conditions
 # for hyperparameter tuning
 ##################################
-XGB_Grid = data.frame(nrounds = 500, 
-                      max_depth = 6, 
-                      eta = 0.3,
+XGB_Grid = expand.grid(nrounds = 500, 
+                      max_depth = c(4,5,6), 
+                      eta = c(0.2,0.3,0.4),
                       gamma = c(0.1,0.01,0.001),
                       colsample_bytree = 1, 
                       min_child_weight = 1,
@@ -1189,7 +1192,13 @@ MBS_XGB_Tune$finalModel
 
 MBS_XGB_Tune$results
 
-(MBS_XGB_Train_ROCCurveAUC <- MBS_XGB_Tune$results[MBS_XGB_Tune$results$gamma==MBS_XGB_Tune$bestTune$gamma,
+(MBS_XGB_Train_ROCCurveAUC <- MBS_XGB_Tune$results[MBS_XGB_Tune$results$nrounds==MBS_XGB_Tune$bestTune$nrounds &
+                                                   MBS_XGB_Tune$results$max_depth==MBS_XGB_Tune$bestTune$max_depth &    
+                                                   MBS_XGB_Tune$results$eta==MBS_XGB_Tune$bestTune$eta &    
+                                                   MBS_XGB_Tune$results$gamma==MBS_XGB_Tune$bestTune$gamma &    
+                                                   MBS_XGB_Tune$results$colsample_bytree==MBS_XGB_Tune$bestTune$colsample_bytree &    
+                                                   MBS_XGB_Tune$results$min_child_weight==MBS_XGB_Tune$bestTune$min_child_weight &    
+                                                   MBS_XGB_Tune$results$subsample==MBS_XGB_Tune$bestTune$subsample,
                                                  c("ROC")])
 
 ##################################
@@ -1733,7 +1742,8 @@ BAL_NB_Tune$finalModel
 BAL_NB_Tune$results
 
 (BAL_NB_Train_ROCCurveAUC <- BAL_NB_Tune$results[BAL_NB_Tune$results$usekernel==BAL_NB_Tune$bestTune$usekernel &
-                                                 BAL_NB_Tune$results$adjust==BAL_NB_Tune$bestTune$adjust,
+                                                 BAL_NB_Tune$results$adjust==BAL_NB_Tune$bestTune$adjust &
+                                                 BAL_NB_Tune$results$fL==BAL_NB_Tune$bestTune$fL,
                                                  c("ROC")])
 
 ##################################
