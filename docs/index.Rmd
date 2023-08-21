@@ -1250,7 +1250,7 @@ MBS_XGB_Test_ROC <- roc(response = MBS_XGB_Test$MBS_XGB_Test_Observed,
 |
 | **[C]** The cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves mtry=75
-|      **[C.2]** ROC Curve AUC = 0.96097
+|      **[C.2]** AUROC = 0.96097
 |
 | **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
 |      **[D.1]** <span style="color: #FF0000">texture_mean</span> (numeric)
@@ -1260,7 +1260,7 @@ MBS_XGB_Test_ROC <- roc(response = MBS_XGB_Test$MBS_XGB_Test_Observed,
 |      **[D.5]** <span style="color: #FF0000">texture_worst</span> (numeric)
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** ROC Curve AUC = 0.99354
+|      **[E.1]** AUROC = 0.99354
 |
 |
 
@@ -1347,7 +1347,7 @@ MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
 |
 | **[C]** The cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
-|      **[C.2]** ROC Curve AUC = 0.95790
+|      **[C.2]** AUROC = 0.95790
 |
 | **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
 |      **[D.1]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
@@ -1357,7 +1357,7 @@ MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
 |      **[D.5]** <span style="color: #FF0000">compactness_se</span> (numeric)
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** ROC Curve AUC = 0.99287
+|      **[E.1]** AUROC = 0.99287
 |
 |
 
@@ -1445,12 +1445,12 @@ MBG_BTREE_Test_ROC <- roc(response = MBG_BTREE_Test$MBG_BTREE_Test_Observed,
 |
 | **[C]** The cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
-|      **[C.2]** ROC Curve AUC = 0.87369
+|      **[C.2]** AUROC = 0.87369
 |
 | **[D]** The model does not allow for ranking of predictors in terms of variable importance.
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** ROC Curve AUC = 0.89847
+|      **[E.1]** AUROC = 0.89847
 |
 |
 
@@ -1530,7 +1530,7 @@ BAL_LDA_Test_ROC <- roc(response = BAL_LDA_Test$BAL_LDA_Test_Observed,
 |
 | **[C]** The cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves cp=0.001
-|      **[C.2]** ROC Curve AUC = 0.88434
+|      **[C.2]** AUROC = 0.88434
 |
 | **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
 |      **[D.1]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
@@ -1540,7 +1540,7 @@ BAL_LDA_Test_ROC <- roc(response = BAL_LDA_Test$BAL_LDA_Test_Observed,
 |      **[D.5]** <span style="color: #FF0000">texture_mean</span> (numeric)
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** ROC Curve AUC = 0.88434
+|      **[E.1]** AUROC = 0.88434
 |
 |
 
@@ -1631,12 +1631,12 @@ BAL_CART_Test_ROC <- roc(response = BAL_CART_Test$BAL_CART_Test_Observed,
 |
 | **[C]** The cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves sigma=0.21332 and C=32
-|      **[C.2]** ROC Curve AUC = 0.90950
+|      **[C.2]** AUROC = 0.90950
 |
 | **[D]** The model does not allow for ranking of predictors in terms of variable importance.
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** ROC Curve AUC = 0.91591
+|      **[E.1]** AUROC = 0.91591
 |
 |
 
@@ -1718,12 +1718,12 @@ BAL_SVM_R_Test_ROC <- roc(response = BAL_SVM_R_Test$BAL_SVM_R_Test_Observed,
 |
 | **[C]** The cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves k=1
-|      **[C.2]** ROC Curve AUC = 0.89992
+|      **[C.2]** AUROC = 0.89992
 |
 | **[D]** The model does not allow for ranking of predictors in terms of variable importance.
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** ROC Curve AUC = 0.97183
+|      **[E.1]** AUROC = 0.97183
 |
 |
 
@@ -1807,12 +1807,12 @@ BAL_KNN_Test_ROC <- roc(response = BAL_KNN_Test$BAL_KNN_Test_Observed,
 |
 | **[C]** The cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves fL=2, adjust=FALSE and usekernel=FALSE
-|      **[C.2]** ROC Curve AUC = 0.88642
+|      **[C.2]** AUROC = 0.88642
 |
 | **[D]** The model does not allow for ranking of predictors in terms of variable importance.
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** ROC Curve AUC = 0.90383
+|      **[E.1]** AUROC = 0.90383
 |
 |
 
