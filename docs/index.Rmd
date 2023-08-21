@@ -966,10 +966,33 @@ MA_Test         <- DPA[-MA_Train_Index, ]
 </details>
 
 ## 1.5 Model Boosting
-
+|
+| [Model Boosting](https://www.statlearning.com/) is an ensemble approach which applies a sequential algorithm that makes predictions for a defined set of rounds on the entire training sample and iteratively improves the performance using the information from the prior round's prediction accuracy. Boosted models build a weak learner that has low predictive accuracy - possessing low variance and high bias. As boosted models go through the process of sequentially improving previous learners, the overall model is able to slowly reduce the bias at each step with minimal variance increase. The final model tends to have sufficiently low bias and variance.
+|
 ###  1.5.1 Adaptive Boosting (MBS_AB)
 |
-| Details.
+| [Adaptive Boosting](https://www.semanticscholar.org/paper/Experiments-with-a-New-Boosting-Algorithm-Freund-Schapire/68c1bfe375dde46777fe1ac8f3636fb651e3f0f8) works on the principle of the stage-wise addition method by developing an initial base learner based on the overall mean or the log-odds of the target variable. For each boosting iteration, a weak learner (using a decision stump - a single level decision tree) is fitted to the training data applying equal sample weights. With the predictions obtained, the weighted error of the base learner is determined and used to calculate the base learner's weight in the ensemble. The sample weights are recomputed. The process is repeated for a defined number of cycles with the final ensemble prediction determined as the weighted sum of the individual predictions from all boosting iterations.
+|
+| **[A]** The adaptive boosting model was implemented through the <mark style="background-color: #CCECFF">**adabag**</mark> package. 
+|
+| **[B]** The model contains 3 hyperparameters:
+|      **[B.1]** <span style="color: #FF0000">mfinal</span> = the number of iterations for which boosting is run or the number of trees to use made to vary across a range of values equal to 50 to 100
+|      **[B.2]** <span style="color: #FF0000">maxdepth</span> = maximum depth of the trees made to vary across a range of values equal to 4 to 6
+|      **[B.3]** <span style="color: #FF0000">coeflearn</span> = coefficient learning method held constant using the setting equal to Breiman
+|
+| **[C]** The cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves mfinal=100, maxdepth=6 and coeflearn=Breiman
+|      **[C.2]** AUROC = 0.96475
+|
+| **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
+|      **[D.1]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.99362
 |
 |
 
@@ -1063,7 +1086,29 @@ MBS_AB_Test_ROC <- roc(response = MBS_AB_Test$MBS_AB_Test_Observed,
 
 ###  1.5.2 Stochastic Gradient Boosting (MBS_GBM)
 |
-| Details.
+| [Stochastic Gradient Boosting](https://www.sciencedirect.com/science/article/abs/pii/S0167947301000652) works on the principle of the stage-wise addition method by developing an initial base learner based on the overall mean or the log-odds of the target variable. For each boosting iteration, a subset of the training data will be sampled with replacement and pseudo-residuals are calculated. A new base learner is fitted to the subsampled data using the pseudo-residuals as the target variable. Gradient descent optimization is applied to minimize the loss function (mean squared error or cross-entropy). Predicted values are obtained and the ensemble prediction is updated for all training samples. The process is repeated for a defined number of cycles with the final ensemble prediction determined as the sum of the individual predictions from all boosting iterations.
+|
+| **[A]** The stochastic gradient boosting model was implemented through the <mark style="background-color: #CCECFF">**gbm**</mark> package. 
+|
+| **[B]** The model contains 1 hyperparameter:
+|      **[B.1]** <span style="color: #FF0000">n.trees</span> = total number of trees to fit (equivalent to the number of iterations and the number of basis functions in the additive expansion) held constant at a value equal to 500
+|      **[B.2]** <span style="color: #FF0000">interaction.depth</span> = maximum depth of each tree (equivalent to the highest level of variable interactions allowed) made to vary across a range of values equal to 4 to 6
+|      **[B.3]** <span style="color: #FF0000">shrinkage</span> = learning rate or step-size reduction applied to each tree in the expansion made to vary across a range of values equal to 0.001 to 0.1
+|      **[B.4]** <span style="color: #FF0000">n.minobsinnode</span> = minimum number of observations in the terminal nodes of the trees made to vary across a range of values equal to 5 to 15
+|
+| **[C]** The cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves n.trees=500, interaction.depth=6, shrinkage=0.1 and n.minobsinnode=5
+|      **[C.2]** AUROC = 0.95995
+|
+| **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
+|      **[D.1]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.98256
 |
 |
 
@@ -1148,7 +1193,32 @@ MBS_GBM_Test_ROC <- roc(response = MBS_GBM_Test$MBS_GBM_Test_Observed,
 
 ###  1.5.3 Extreme Gradient Boosting (MBS_XGB)
 |
-| Details.
+| [Extreme Gradient Boosting](https://arxiv.org/abs/1603.02754) is an optimized and scalable version of the stochastic gradient boosting developed to overcome its limitations. The algorithm introduced enhancements including regularization terms to control overfitting and a second-order gradient approximation to improve convergence speed. Parallel processing is also implemented, making the computations faster than traditional GBM for large datasets.
+|
+| **[A]** The extreme gradient boosting model was implemented through the <mark style="background-color: #CCECFF">**xgboost**</mark> package. 
+|
+| **[B]** The model contains 1 hyperparameter:
+|      **[B.1]** <span style="color: #FF0000">nrounds</span> = maximum number of iterations held constant at a value equal to 500
+|      **[B.2]** <span style="color: #FF0000">max_depth</span> = maximum depth of the trees made to vary across a range of values equal to 4 to 6
+|      **[B.3]** <span style="color: #FF0000">eta</span> = step size or learning rate of each boosting step made to vary across a range of values equal to 0.2 to 0.4
+|      **[B.4]** <span style="color: #FF0000">gamma</span> = minimum loss reduction required to make a further partition on a leaf node of the tree made to vary across a range of values equal to 0.001 to 0.1
+|      **[B.5]** <span style="color: #FF0000">colsample_bytree</span> = subsample ratio of columns when constructing each tree held constant at a value equal to 1
+|      **[B.6]** <span style="color: #FF0000">min_child_weight</span> = minimum sum of instance weight (hessian) needed in a child held constant at a value equal to 1
+|      **[B.7]** <span style="color: #FF0000">subsample</span> = subsample ratio of the training instance held constant at a value equal to 1
+|
+| **[C]** The cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves nrounds=500, max_depth=5, eta=0.3, gamma=0.001, colsample_bytree=1, min_child_weight=1 and subsample=1
+|      **[C.2]** AUROC = 0.95898
+|
+| **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
+|      **[D.1]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.98306
 |
 |
 
@@ -1238,7 +1308,9 @@ MBS_XGB_Test_ROC <- roc(response = MBS_XGB_Test$MBS_XGB_Test_Observed,
 </details>
 
 ## 1.6 Model Bagging
-
+|
+| [Model Bagging](https://www.statlearning.com/), also known as bootstrap aggregation, is an ensemble learning approach that combines the benefits of bootstrapping and aggregation to yield a stable model and improve the prediction performance of a statistical learning method. In bagging, equal-sized subsets are sampled from a dataset with bootstrapping (repeated subsampling of the rows of the original data with replacement) and models trained on each of the subsets independently and in parallel. Aggregation involves combining the results from each model by averaging or voting to get a final result. The bagging process reduces the variance of the statistical learning method after consolidation. The final model tends to have sufficiently low variance by increasing robustness to noise in the data.
+|
 ###  1.6.1 Random Forest (MBG_RF)
 |
 | [Random Forest](https://link.springer.com/article/10.1023/A:1010933404324) is an ensemble learning method made up of a large set of small decision trees called estimators, with each producing its own prediction. The random forest model aggregates the predictions of the estimators to produce a more accurate prediction. The algorithm involves bootstrap aggregating (where smaller subsets of the training data are repeatedly subsampled with replacement), random subspacing (where a subset of features are sampled and used to train each individual estimator), estimator training (where unpruned decision trees are formulated for each estimator) and inference by aggregating the predictions of all estimators.
@@ -1433,8 +1505,10 @@ MBG_BTREE_Test_ROC <- roc(response = MBG_BTREE_Test$MBG_BTREE_Test_Observed,
 
 </details>
 
-## 1.7 Model Ensemble and Stacking
-
+## 1.7 Model Stacking
+|
+| [Model Stacking](https://www.statlearning.com/), also known as stacked generalization, is an ensemble approach which involves creating a variety of base learners and use them to create intermediate predictions, one for each learned model.  A meta-model is incorporated that gains knowledge of the same target from intermediate predictions. Unlike bagging, in stacking, the models are typically different (e.g. not all decision trees) and fit on the same dataset (e.g. instead of samples of the training dataset). Unlike boosting, in stacking, a single model is used to learn how to best combine the predictions from the contributing models (e.g. instead of a sequence of models that correct the predictions of prior models). Stacking is appropriate when the predictions made by the base learners or the errors in predictions made by the models have minimal correlation. Achieving an improvement in performance is dependent upon the choice of base learners and whether they are sufficiently skillful in their predictions.
+|
 ###  1.7.1 Base Learner Model Development using Linear Discriminant Analysis (BAL_LDA)
 |
 | [Linear Discriminant Analysis](https://www.semanticscholar.org/paper/THE-USE-OF-MULTIPLE-MEASUREMENTS-IN-TAXONOMIC-Fisher/ab21376e43ac90a4eafd14f0f02a0c87502b6bbf) finds a linear combination of features that best separates the classes in a data set by projecting the data onto a lower-dimensional space that maximizes the separation between the classes. The algorithm searches for a set of linear discriminants that maximize the ratio of between-class variance to within-class variance by evaluating directions in the feature space that best separate the different classes of data. LDA assumes that the data has a Gaussian distribution and that the covariance matrices of the different classes are equal, in addition to the data being linearly separable by the presence of a linear decision boundary can accurately classify the different classes.
@@ -1887,7 +1961,7 @@ BAL_NB_Test_ROC <- roc(response = BAL_NB_Test$BAL_NB_Test_Observed,
 </details>
 
 
-###  1.7.6 Ensemble Learner Model Development (ENL)
+###  1.7.6 Ensembling Base Learners
 |
 | Details.
 |
@@ -1938,46 +2012,11 @@ splom(BAL_LIST_RESAMPLES)
 ##################################
 BAL_LIST_COR <- modelCor(resamples(BAL_LIST))
 
-##################################
-# Formulating an ensemble model
-# using the base learners
-##################################
-set.seed(12345678)
-ENL <- caretEnsemble(BAL_LIST,
-                     metric="ROC",
-                     trControl=RKFold_Control)
-print(ENL)
-
-(ENL_Train_AUROC <- ENL$ens_model$results$ROC)
-
-##################################
-# Independently evaluating the model
-# on the test set
-##################################
-ENL_Test <- data.frame(ENL_Test_Observed = MA_Test$diagnosis,
-                       ENL_Test_Predicted = predict(ENL,
-                                                    MA_Test[,!names(MA_Test) %in% c("diagnosis")],
-                                                    type = "prob"))
-
-ENL_Test$ENL_Test_Predicted.M <- ENL_Test$ENL_Test_Predicted
-
-ENL_Test
-
-#################################
-# Reporting the independent evaluation results
-# for the test set
-#################################
-ENL_Test_ROC <- roc(response = ENL_Test$ENL_Test_Observed,
-                    predictor = ENL_Test$ENL_Test_Predicted.M,
-                    levels = rev(levels(ENL_Test$ENL_Test_Observed)))
-
-(ENL_Test_AUROC <- auc(ENL_Test_ROC)[1])
-
 ```
 
 </details>
 
-###  1.7.7 Meta Learner Model Development using Linear Regression (MEL_LR)
+###  1.7.7 Meta-Learner Model Development using Logistic Regression (MEL_LR)
 |
 | Details.
 |
@@ -2028,7 +2067,7 @@ MEL_LR_Test_ROC <- roc(response = MEL_LR_Test$MEL_LR_Test_Observed,
 
 </details>
 
-###  1.7.8 Meta Learner Model Development using Random Forest (MEL_RF)
+###  1.7.8 Meta-Learner Model Development using Random Forest (MEL_RF)
 |
 | Details.
 |
@@ -2125,22 +2164,22 @@ bwplot(Consolidated_Resampling,
 Model <- c('MBS_AB','MBS_GBM','MBS_XGB',
            'MBG_RF','MBG_BTREE',
            'BAL_LDA','BAL_CART','BAL_SVM_R','BAL_KNN','BAL_NB',
-           'ENL','MEL_LR','MEL_RF',
+           'MEL_LR','MEL_RF',
            'MBS_AB','MBS_GBM','MBS_XGB',
            'MBG_RF','MBG_BTREE',
            'BAL_LDA','BAL_CART','BAL_SVM_R','BAL_KNN','BAL_NB',
-           'ENL','MEL_LR','MEL_RF')
+           'MEL_LR','MEL_RF')
 
-Set <- c(rep('Cross-Validation',13),rep('Test',13))
+Set <- c(rep('Cross-Validation',12),rep('Test',12))
 
 AUROC <- c(MBS_AB_Train_AUROC,MBS_GBM_Train_AUROC,MBS_XGB_Train_AUROC,
            MBG_RF_Train_AUROC,MBG_BTREE_Train_AUROC,
            BAL_LDA_Train_AUROC,BAL_CART_Train_AUROC,BAL_SVM_R_Train_AUROC,BAL_KNN_Train_AUROC,BAL_NB_Train_AUROC,
-           ENL_Train_AUROC,MEL_LR_Train_AUROC,MEL_RF_Train_AUROC,
+           MEL_LR_Train_AUROC,MEL_RF_Train_AUROC,
            MBS_AB_Test_AUROC,MBS_GBM_Test_AUROC,MBS_XGB_Test_AUROC,
            MBG_RF_Test_AUROC,MBG_BTREE_Test_AUROC,
            BAL_LDA_Test_AUROC,BAL_CART_Test_AUROC,BAL_SVM_R_Test_AUROC,BAL_KNN_Test_AUROC,BAL_NB_Test_AUROC,
-           ENL_Test_AUROC,MEL_LR_Test_AUROC,MEL_RF_Test_AUROC)
+           MEL_LR_Test_AUROC,MEL_RF_Test_AUROC)
 
 AUROC_Summary <- as.data.frame(cbind(Model,Set,AUROC))
 
@@ -2159,7 +2198,6 @@ AUROC_Summary$Model <- factor(AUROC_Summary$Model,
                                          'BAL_SVM_R',
                                          'BAL_KNN',
                                          'BAL_NB',
-                                         'ENL',
                                          'MEL_LR',
                                          'MEL_RF'))
 
@@ -2212,6 +2250,10 @@ print(AUROC_Summary, row.names=FALSE)
 | **[R Package]** [stats](https://search.r-project.org/R/refmans/stats/html/00Index.html) by R Core Team
 
 | **[R Package]** [caretEnsemble](https://cran.r-project.org/web/packages/caretEnsemble/caretEnsemble.pdf) by Zachary Deane-Mayer
+| **[R Package]** [pROC](https://cran.r-project.org/web/packages/pROC/pROC.pdf) by Xavier Robin
+| **[R Package]** [adabag](https://cran.r-project.org/web/packages/adabag/adabag.pdf) by Esteban Alfaro, Matias Gamez and Noelia Garcia
+| **[R Package]** [gbm](https://cran.r-project.org/web/packages/gbm/gbm.pdf) by Brandon Greenwell, Bradley Boehmke and Jay Cunningham 
+| **[R Package]** [xgboost](https://cran.r-project.org/web/packages/xgboost/xgboost.pdf) by Jiaming Yuan
 | **[Article]** [A Brief Introduction to caretEnsemble)](https://cran.r-project.org/web/packages/caretEnsemble/vignettes/caretEnsemble-intro.html) by Zachary Deane-Mayer
 | **[Article]** [How to Build an Ensemble Of Machine Learning Algorithms in R](https://machinelearningmastery.com/machine-learning-ensembles-with-r/) by Jason Brownlee
 | **[Article]** [Ensemble Learning: Bagging, Boosting, and Stacking](https://towardsai.net/p/machine-learning/ensemble-learning-bagging-boosting-and-stacking) by Towards AI Team
@@ -2220,8 +2262,16 @@ print(AUROC_Summary, row.names=FALSE)
 | **[Article]** [Essence of Boosting Ensembles for Machine Learning](https://machinelearningmastery.com/essence-of-boosting-ensembles-for-machine-learning/) by Jason Brownlee
 | **[Article]** [Ensemble Modeling with R](https://www.pluralsight.com/guides/ensemble-modeling-with-r) by Deepika Singh
 | **[Article]** [Creating Ensemble Models in R](https://dustinrogers.github.io/Ensemble-Models/) by Dustin Rogers
+| **[Article]** [Stacking Ensemble Machine Learning With Python](https://machinelearningmastery.com/stacking-ensemble-machine-learning-with-python/) by Jason Brownlee
+| **[Article]** [Stacking Machine Learning: Everything You Need to Know](https://www.machinelearningpro.org/stacking-machine-learning/) by Ada Parker
+| **[Article]** [Essence of Stacking Ensembles for Machine Learning](https://machinelearningmastery.com/essence-of-stacking-ensembles-for-machine-learning/) by Jason Brownlee
+| **[Article]** [Stack Machine Learning Models: Get Better Results](https://developer.ibm.com/articles/stack-machine-learning-models-get-better-results/) by IBM Team
+| **[Article]** [Gradient Boosting vs AdaBoost vs XGBoost vs CatBoost vs LightGBM](https://www.geeksforgeeks.org/gradientboosting-vs-adaboost-vs-xgboost-vs-catboost-vs-lightgbm/) by Geeks for Geeks Team
+| **[Publication]** [Experiments with a New Boosting Algorithm](https://www.semanticscholar.org/paper/Experiments-with-a-New-Boosting-Algorithm-Freund-Schapire/68c1bfe375dde46777fe1ac8f3636fb651e3f0f8) by Yoav Freund and Robert Schapire (Proceedings of the Thirteenth International Conference on Machine Learning)
+| **[Publication]** [Stochastic Gradient Boosting](https://www.sciencedirect.com/science/article/abs/pii/S0167947301000652) by Jerome Friedman (Computational Statistics and Data Analysis)
+| **[Publication]** [XGBoost: A Scalable Tree Boosting System](https://arxiv.org/abs/1603.02754) by Tianqi Chen and Carlos Guestrin (22nd SIGKDD Conference on Knowledge Discovery and Data Mining)
 | **[Publication]** [Ensemble Selection from Libraries of Models](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.60.2859&rep=rep1&type=pdf) by Rich Caruana, Alexandru Niculescu-Mizil, Geoff Crew and Alex Ksikes (Proceedings of the 21 st International Conference on Machine Learning)
-| **[Publication]** [Random Forest ](https://link.springer.com/article/10.1023/A:1010933404324) by Leo Breiman (Machine Learning)
+| **[Publication]** [Random Forest](https://link.springer.com/article/10.1023/A:1010933404324) by Leo Breiman (Machine Learning)
 | **[Publication]** [Bagging Predictors](https://link.springer.com/article/10.1007/BF00058655) by Leo Breiman (Machine Learning)
 | **[Publication]** [The Use of Multiple Measurements in Taxonomic Problems](https://www.semanticscholar.org/paper/THE-USE-OF-MULTIPLE-MEASUREMENTS-IN-TAXONOMIC-Fisher/ab21376e43ac90a4eafd14f0f02a0c87502b6bbf) by Ronald Fisher (Annals of Human Genetics)
 | **[Publication]** [Classification and Regression Trees](https://www.semanticscholar.org/paper/Classification-and-Regression-Trees-Breiman-Friedman/8017699564136f93af21575810d557dba1ee6fc6) by Leo Breiman, Jerome Friedman, Richard Olshen, and Charles Stone (Computer Science)
