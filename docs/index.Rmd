@@ -971,7 +971,7 @@ MA_Test         <- DPA[-MA_Train_Index, ]
 |
 ###  1.5.1 Adaptive Boosting (MBS_AB)
 |
-| [Adaptive Boosting](https://www.semanticscholar.org/paper/Experiments-with-a-New-Boosting-Algorithm-Freund-Schapire/68c1bfe375dde46777fe1ac8f3636fb651e3f0f8) works on the principle of the stage-wise addition method by developing an initial base learner based on the overall mean or the log-odds of the target variable. For each boosting iteration, a weak learner (using a decision stump - a single level decision tree) is fitted to the training data applying equal sample weights. With the predictions obtained, the weighted error of the base learner is determined and used to calculate the base learner's weight in the ensemble. The sample weights are recomputed. The process is repeated for a defined number of cycles with the final ensemble prediction determined as the weighted sum of the individual predictions from all boosting iterations.
+| [Adaptive Boosting](https://www.semanticscholar.org/paper/Experiments-with-a-New-Boosting-Algorithm-Freund-Schapire/68c1bfe375dde46777fe1ac8f3636fb651e3f0f8) applies an adaptive reweighting and combining approach which is initiated using a learner based on the overall mean or the log-odds of the target variable. For each boosting iteration, a weak learner (using a decision stump - a single level decision tree) is fitted to the training data applying equal sample weights. With the predictions obtained, the weighted error of the base learner is determined and used to calculate the base learner's weight in the ensemble. The sample weights are recomputed, putting more weight on difficult to classify instances and less on those already handled well. The process is repeated for a defined number of cycles where new weak learners are added sequentially that focus their training on the more difficult patterns. The final ensemble prediction is determined as the weighted sum of the individual predictions from all boosting iterations.
 |
 | **[A]** The adaptive boosting model was implemented through the <mark style="background-color: #CCECFF">**adabag**</mark> package. 
 |
@@ -1086,7 +1086,7 @@ MBS_AB_Test_ROC <- roc(response = MBS_AB_Test$MBS_AB_Test_Observed,
 
 ###  1.5.2 Stochastic Gradient Boosting (MBS_GBM)
 |
-| [Stochastic Gradient Boosting](https://www.sciencedirect.com/science/article/abs/pii/S0167947301000652) works on the principle of the stage-wise addition method by developing an initial base learner based on the overall mean or the log-odds of the target variable. For each boosting iteration, a subset of the training data will be sampled with replacement and pseudo-residuals are calculated. A new base learner is fitted to the subsampled data using the pseudo-residuals as the target variable. Gradient descent optimization is applied to minimize the loss function (mean squared error or cross-entropy). Predicted values are obtained and the ensemble prediction is updated for all training samples. The process is repeated for a defined number of cycles with the final ensemble prediction determined as the sum of the individual predictions from all boosting iterations.
+| [Stochastic Gradient Boosting](https://www.sciencedirect.com/science/article/abs/pii/S0167947301000652) works on the principle of the stage-wise addition method but the statistical framework cast boosting as a numerical optimization problem where the objective is to minimize the loss of the model by adding weak learners using a gradient descent-like procedure. An initial learner is developed based on the overall mean or the log-odds of the target variable. For each boosting iteration, a subset of the training data will be sampled with replacement and pseudo-residuals are calculated. A new base learner is fitted to the subsampled data using the pseudo-residuals as the target variable. Gradient descent optimization is applied to minimize the loss function (mean squared error or cross-entropy). Predicted values are obtained and the ensemble prediction is updated for all training samples. The process is repeated for a defined number of cycles with the final ensemble prediction determined as the sum of the individual predictions from all boosting iterations.
 |
 | **[A]** The stochastic gradient boosting model was implemented through the <mark style="background-color: #CCECFF">**gbm**</mark> package. 
 |
@@ -1318,21 +1318,21 @@ MBS_XGB_Test_ROC <- roc(response = MBS_XGB_Test$MBS_XGB_Test_Observed,
 | **[A]** The random forest model from the  <mark style="background-color: #CCECFF">**randomForest**</mark> package was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
 |
 | **[B]** The model contains 1 hyperparameter:
-|      **[B.1]** <span style="color: #FF0000">mtry</span> = number of randomly selected predictors made to vary across a range of values equal to 25 to 125
+|      **[B.1]** <span style="color: #FF0000">mtry</span> = number of randomly selected predictors made to vary across a range of values equal to 2 to 5
 |
 | **[C]** The cross-validated model performance of the final model is summarized as follows:
-|      **[C.1]** Final model configuration involves mtry=75
-|      **[C.2]** AUROC = 0.96097
+|      **[C.1]** Final model configuration involves mtry=2
+|      **[C.2]** AUROC = 0.96549
 |
 | **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
 |      **[D.1]** <span style="color: #FF0000">texture_mean</span> (numeric)
 |      **[D.2]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
-|      **[D.3]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
-|      **[D.4]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
-|      **[D.5]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** AUROC = 0.99354
+|      **[E.1]** AUROC = 0.99580
 |
 |
 
@@ -1344,7 +1344,7 @@ MBS_XGB_Test_ROC <- roc(response = MBS_XGB_Test$MBS_XGB_Test_Observed,
 # Setting the conditions
 # for hyperparameter tuning
 ##################################
-RF_Grid = data.frame(mtry = c(25,75,125))
+RF_Grid = data.frame(mtry = c(2,3,4,5))
 
 ##################################
 # Running the random forest model
@@ -1961,9 +1961,24 @@ BAL_NB_Test_ROC <- roc(response = BAL_NB_Test$BAL_NB_Test_Observed,
 </details>
 
 
-###  1.7.6 Ensembling Base Learners
+###  1.7.6 Base Learner Ensemble
 |
-| Details.
+| **[A]** An ensemble of optimal individual base learners based on previous hyperparameter tuning evaluation was formulated as follows: 
+|      **[A.1]** Linear Discriminant Analysis
+|      **[A.2]** Classification and Regression Trees
+|             **[A.2.1]** <span style="color: #FF0000">cp</span> = 0.001
+|      **[A.3]** Support Vector Machine - Radial Basis Function Kernel 
+|             **[A.3.1]** <span style="color: #FF0000">sigma</span> = 0.21332
+|             **[A.3.2]** <span style="color: #FF0000">C</span> = 32
+|      **[A.4]** K-Nearest Neighbors 
+|             **[A.4.1]** <span style="color: #FF0000">k</span> = 1
+|      **[A.5]** Naive Bayes 
+|             **[A.5.1]** <span style="color: #FF0000">fL</span> = 2
+|             **[A.5.2]** <span style="color: #FF0000">adjust</span> = FALSE
+|             **[A.5.3]** <span style="color: #FF0000">usekernel</span> = FALSE
+|
+| **[B]** Among pairs of base learners, high correlation was observed between:
+|      **[B.1]** Linear Discriminant Analysis and Naive Bayes = x.xxxxx
 |
 |
 
@@ -2010,7 +2025,7 @@ splom(BAL_LIST_RESAMPLES)
 # Measuring the correlation among
 # base learners
 ##################################
-BAL_LIST_COR <- modelCor(resamples(BAL_LIST))
+(BAL_LIST_COR <- modelCor(resamples(BAL_LIST)))
 
 ```
 
@@ -2018,7 +2033,19 @@ BAL_LIST_COR <- modelCor(resamples(BAL_LIST))
 
 ###  1.7.7 Meta-Learner Model Development using Logistic Regression (MEL_LR)
 |
-| Details.
+| [Logistic Regression](http://dx.doi.org/10.2139/ssrn.360300) models the relationship between the probability of an event (among two outcome levels) by having the log-odds of the event be a linear combination of a set of predictors weighted by their respective parameter estimates. The parameters are estimated via maximum likelihood estimation by testing different values through multiple iterations to optimize for the best fit of log odds. All of these iterations produce the log likelihood function, and logistic regression seeks to maximize this function to find the best parameter estimates. Given the optimal parameters, the conditional probabilities for each observation can be calculated, logged, and summed together to yield a predicted probability.
+|
+| **[A]** The logistic regression model from the  <mark style="background-color: #CCECFF">**stats**</mark> package was implemented on the optimal base learner ensemble through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model does not contain any hyperparameter.
+|
+| **[C]** The cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
+|      **[C.2]** ROC Curve AUC = 0.94765
+|
+|
+| **[D]** The independent test model performance of the final model is summarized as follows:
+|      **[D.1]** ROC Curve AUC = 0.98625
 |
 |
 
@@ -2069,7 +2096,19 @@ MEL_LR_Test_ROC <- roc(response = MEL_LR_Test$MEL_LR_Test_Observed,
 
 ###  1.7.8 Meta-Learner Model Development using Random Forest (MEL_RF)
 |
-| Details.
+| [Random Forest](https://link.springer.com/article/10.1023/A:1010933404324) is an ensemble learning method made up of a large set of small decision trees called estimators, with each producing its own prediction. The random forest model aggregates the predictions of the estimators to produce a more accurate prediction. The algorithm involves bootstrap aggregating (where smaller subsets of the training data are repeatedly subsampled with replacement), random subspacing (where a subset of features are sampled and used to train each individual estimator), estimator training (where unpruned decision trees are formulated for each estimator) and inference by aggregating the predictions of all estimators.
+|
+| **[A]** The random forest model from the  <mark style="background-color: #CCECFF">**randomForest**</mark> package was implemented optimal base learner ensemble through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model contains 1 hyperparameter:
+|      **[B.1]** <span style="color: #FF0000">mtry</span> = number of randomly selected predictors made to vary across a range of values equal to 2 to 5
+|
+| **[C]** The cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves mtry=3
+|      **[C.2]** AUROC = 0.98089
+|
+| **[D]** The independent test model performance of the final model is summarized as follows:
+|      **[D.1]** AUROC = 0.98926
 |
 |
 
@@ -2086,7 +2125,8 @@ set.seed(12345678)
 MEL_RF <- caretStack(BAL_LIST,
                      metric="ROC",
                      trControl=RKFold_Control,
-                     method="rf")
+                     method="rf",
+                     tuneGrid = RF_Grid)
 print(MEL_RF)
 
 (MEL_RF_Train_AUROC <- max(MEL_RF$ens_model$results$ROC))
@@ -2267,6 +2307,8 @@ print(AUROC_Summary, row.names=FALSE)
 | **[Article]** [Essence of Stacking Ensembles for Machine Learning](https://machinelearningmastery.com/essence-of-stacking-ensembles-for-machine-learning/) by Jason Brownlee
 | **[Article]** [Stack Machine Learning Models: Get Better Results](https://developer.ibm.com/articles/stack-machine-learning-models-get-better-results/) by IBM Team
 | **[Article]** [Gradient Boosting vs AdaBoost vs XGBoost vs CatBoost vs LightGBM](https://www.geeksforgeeks.org/gradientboosting-vs-adaboost-vs-xgboost-vs-catboost-vs-lightgbm/) by Geeks for Geeks Team
+| **[Article]** [A Gentle Introduction to the Gradient Boosting Algorithm for Machine Learning](https://machinelearningmastery.com/gentle-introduction-gradient-boosting-algorithm-machine-learning/) by Jason Brownlee
+| **[Article]** [The Ultimate Guide to AdaBoost Algorithm | What is AdaBoost Algorithm?](https://www.mygreatlearning.com/blog/adaboost-algorithm/) by Ashish Kumar
 | **[Publication]** [Experiments with a New Boosting Algorithm](https://www.semanticscholar.org/paper/Experiments-with-a-New-Boosting-Algorithm-Freund-Schapire/68c1bfe375dde46777fe1ac8f3636fb651e3f0f8) by Yoav Freund and Robert Schapire (Proceedings of the Thirteenth International Conference on Machine Learning)
 | **[Publication]** [Stochastic Gradient Boosting](https://www.sciencedirect.com/science/article/abs/pii/S0167947301000652) by Jerome Friedman (Computational Statistics and Data Analysis)
 | **[Publication]** [XGBoost: A Scalable Tree Boosting System](https://arxiv.org/abs/1603.02754) by Tianqi Chen and Carlos Guestrin (22nd SIGKDD Conference on Knowledge Discovery and Data Mining)
@@ -2278,6 +2320,7 @@ print(AUROC_Summary, row.names=FALSE)
 | **[Publication]** [A Training Algorithm for Optimal Margin Classifiers](https://dl.acm.org/doi/10.1145/130385.130401) by Bernhard Boser, Isabelle Guyon and Vladimir Vapnik (Proceedings of the Fifth Annual Workshop on Computational Learning Theory)
 | **[Publication]** [Nearest Neighbor Pattern Classification](https://ieeexplore.ieee.org/document/1053964) Thomas Cover and Peter Hart (IEEE Transactions on Information Theory)
 | **[Publication]** [Who Discovered Bayes's Theorem?](https://www.jstor.org/stable/2682766) by Stephen Stigler (The American Statistician)
+| **[Publication]** [The Origins of Logistic Regression](http://dx.doi.org/10.2139/ssrn.360300) by JS Cramer (Econometrics eJournal)
 | **[Course]** [Applied Data Mining and Statistical Learning](https://online.stat.psu.edu/stat508/) by Penn State Eberly College of Science
 |
 |
