@@ -19,7 +19,8 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
 |
 | Details.
 |
-| Details.
+| Ensemble learning aims to improve predictive performance by reaching a consensus in predictions through the fusion of the salient properties of two or more models. The final ensemble learning framework is more robust than the individual models that constitute the ensemble because of the variance reduction in the prediction errors. The process captures complementary information from the different contributing models - driving for a more efficient ensemble framework when the individual models are statistically diverse. The algorithms applied in this study (mostly contained in the <mark style="background-color: #CCECFF">**caret**</mark> and <mark style="background-color: #CCECFF">**caretEnsemble**</mark> packages) were grouped into three classes of ensemble learning techniques including boosting which involves adding ensemble members sequentially that correct the predictions made by prior models and outputs a weighted average of the predictions; bagging which involves fitting many decision trees on different samples of the same dataset and averaging the predictions; and stacking which involves fitting many different models types on the same data and using another model to learn how to best combine the predictions.
+|
 |
 ##  1.1 Sample Data
 |
@@ -980,7 +981,7 @@ MA_Test         <- DPA[-MA_Train_Index, ]
 |      **[B.2]** <span style="color: #FF0000">maxdepth</span> = maximum depth of the trees made to vary across a range of values equal to 4 to 6
 |      **[B.3]** <span style="color: #FF0000">coeflearn</span> = coefficient learning method held constant using the setting equal to Breiman
 |
-| **[C]** The cross-validated model performance of the final model is summarized as follows:
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves mfinal=100, maxdepth=6 and coeflearn=Breiman
 |      **[C.2]** AUROC = 0.96475
 |
@@ -1096,7 +1097,7 @@ MBS_AB_Test_ROC <- roc(response = MBS_AB_Test$MBS_AB_Test_Observed,
 |      **[B.3]** <span style="color: #FF0000">shrinkage</span> = learning rate or step-size reduction applied to each tree in the expansion made to vary across a range of values equal to 0.001 to 0.1
 |      **[B.4]** <span style="color: #FF0000">n.minobsinnode</span> = minimum number of observations in the terminal nodes of the trees made to vary across a range of values equal to 5 to 15
 |
-| **[C]** The cross-validated model performance of the final model is summarized as follows:
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves n.trees=500, interaction.depth=6, shrinkage=0.1 and n.minobsinnode=5
 |      **[C.2]** AUROC = 0.95995
 |
@@ -1206,7 +1207,7 @@ MBS_GBM_Test_ROC <- roc(response = MBS_GBM_Test$MBS_GBM_Test_Observed,
 |      **[B.6]** <span style="color: #FF0000">min_child_weight</span> = minimum sum of instance weight (hessian) needed in a child held constant at a value equal to 1
 |      **[B.7]** <span style="color: #FF0000">subsample</span> = subsample ratio of the training instance held constant at a value equal to 1
 |
-| **[C]** The cross-validated model performance of the final model is summarized as follows:
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves nrounds=500, max_depth=5, eta=0.3, gamma=0.001, colsample_bytree=1, min_child_weight=1 and subsample=1
 |      **[C.2]** AUROC = 0.95898
 |
@@ -1320,7 +1321,7 @@ MBS_XGB_Test_ROC <- roc(response = MBS_XGB_Test$MBS_XGB_Test_Observed,
 | **[B]** The model contains 1 hyperparameter:
 |      **[B.1]** <span style="color: #FF0000">mtry</span> = number of randomly selected predictors made to vary across a range of values equal to 2 to 5
 |
-| **[C]** The cross-validated model performance of the final model is summarized as follows:
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves mtry=2
 |      **[C.2]** AUROC = 0.96549
 |
@@ -1409,7 +1410,7 @@ MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
 
 </details>
 
-###  1.6.2 Bagged Classification and Regression Trees (MBG_BTREE)
+###  1.6.2 Bagged Classification and Regression Trees (MBG_BCART)
 |
 | [Bagged Classification and Regression Trees](https://link.springer.com/article/10.1007/BF00058655) combine bootstrapping and decision trees to construct an ensemble. The modeling process involves generating bootstrap samples of the original data, training an unpruned decision tree for each bootstrap subset of the data and implementing an ensemble voting for all the individual decision tree predictions to formulate the final prediction. The bootstrap aggregation (bagging) mechanism improves the model performance by reducing variance. Although the individual decision trees in the model are identically distributed, they are not necessarily independent and share similar structure. This similarity, known as tree correlation, is an essential factor that prevents further reduction of variance.
 |
@@ -1417,7 +1418,7 @@ MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
 |
 | **[B]** The model does not contain any hyperparameter.
 |
-| **[C]** The cross-validated model performance of the final model is summarized as follows:
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
 |      **[C.2]** AUROC = 0.95790
 |
@@ -1448,7 +1449,7 @@ MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
 # by setting the caret method to 'treebag'
 ##################################
 set.seed(12345678)
-MBG_BTREE_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+MBG_BCART_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
                         y = MA_Train$diagnosis,
                         method = "treebag",
                         nbagg = 50,
@@ -1459,20 +1460,20 @@ MBG_BTREE_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
 # Reporting the cross-validation results
 # for the train set
 ##################################
-MBG_BTREE_Tune
+MBG_BCART_Tune
 
-MBG_BTREE_Tune$finalModel
+MBG_BCART_Tune$finalModel
 
-MBG_BTREE_Tune$results
+MBG_BCART_Tune$results
 
-(MBG_BTREE_Train_AUROC <- MBG_BTREE_Tune$results$ROC)
+(MBG_BCART_Train_AUROC <- MBG_BCART_Tune$results$ROC)
 
 ##################################
 # Identifying and plotting the
 # best model predictors
 ##################################
-MBG_BTREE_VarImp <- varImp(MBG_BTREE_Tune, scale = TRUE)
-plot(MBG_BTREE_VarImp,
+MBG_BCART_VarImp <- varImp(MBG_BCART_Tune, scale = TRUE)
+plot(MBG_BCART_VarImp,
      top=6,
      scales=list(y=list(cex = .95)),
      main="Ranked Variable Importance : Bagged Classification and Regression Trees",
@@ -1486,8 +1487,8 @@ plot(MBG_BTREE_VarImp,
 # Independently evaluating the model
 # on the test set
 ##################################
-MBG_BTREE_Test <- data.frame(MBG_BTREE_Test_Observed = MA_Test$diagnosis,
-                             MBG_BTREE_Test_Predicted = predict(MBG_BTREE_Tune,
+MBG_BCART_Test <- data.frame(MBG_BCART_Test_Observed = MA_Test$diagnosis,
+                             MBG_BCART_Test_Predicted = predict(MBG_BCART_Tune,
                                                                 MA_Test[,!names(MA_Test) %in% c("diagnosis")],
                                                                 type = "prob"))
 
@@ -1495,11 +1496,11 @@ MBG_BTREE_Test <- data.frame(MBG_BTREE_Test_Observed = MA_Test$diagnosis,
 # Reporting the independent evaluation results
 # for the test set
 ##################################
-MBG_BTREE_Test_ROC <- roc(response = MBG_BTREE_Test$MBG_BTREE_Test_Observed,
-                          predictor = MBG_BTREE_Test$MBG_BTREE_Test_Predicted.M,
-                          levels = rev(levels(MBG_BTREE_Test$MBG_BTREE_Test_Observed)))
+MBG_BCART_Test_ROC <- roc(response = MBG_BCART_Test$MBG_BCART_Test_Observed,
+                          predictor = MBG_BCART_Test$MBG_BCART_Test_Predicted.M,
+                          levels = rev(levels(MBG_BCART_Test$MBG_BCART_Test_Observed)))
 
-(MBG_BTREE_Test_AUROC <- auc(MBG_BTREE_Test_ROC)[1])
+(MBG_BCART_Test_AUROC <- auc(MBG_BCART_Test_ROC)[1])
 
 ```
 
@@ -1507,7 +1508,7 @@ MBG_BTREE_Test_ROC <- roc(response = MBG_BTREE_Test$MBG_BTREE_Test_Observed,
 
 ## 1.7 Model Stacking
 |
-| [Model Stacking](https://www.statlearning.com/), also known as stacked generalization, is an ensemble approach which involves creating a variety of base learners and use them to create intermediate predictions, one for each learned model.  A meta-model is incorporated that gains knowledge of the same target from intermediate predictions. Unlike bagging, in stacking, the models are typically different (e.g. not all decision trees) and fit on the same dataset (e.g. instead of samples of the training dataset). Unlike boosting, in stacking, a single model is used to learn how to best combine the predictions from the contributing models (e.g. instead of a sequence of models that correct the predictions of prior models). Stacking is appropriate when the predictions made by the base learners or the errors in predictions made by the models have minimal correlation. Achieving an improvement in performance is dependent upon the choice of base learners and whether they are sufficiently skillful in their predictions.
+| [Model Stacking](https://www.manning.com/books/ensemble-methods-for-machine-learning), also known as stacked generalization, is an ensemble approach which involves creating a variety of base learners and using them to create intermediate predictions, one for each learned model. A meta-model is incorporated that gains knowledge of the same target from intermediate predictions. Unlike bagging, in stacking, the models are typically different (e.g. not all decision trees) and fit on the same dataset (e.g. instead of samples of the training dataset). Unlike boosting, in stacking, a single model is used to learn how to best combine the predictions from the contributing models (e.g. instead of a sequence of models that correct the predictions of prior models). Stacking is appropriate when the predictions made by the base learners or the errors in predictions made by the models have minimal correlation. Achieving an improvement in performance is dependent upon the choice of base learners and whether they are sufficiently skillful in their predictions.
 |
 ###  1.7.1 Base Learner Model Development using Linear Discriminant Analysis (BAL_LDA)
 |
@@ -1517,7 +1518,7 @@ MBG_BTREE_Test_ROC <- roc(response = MBG_BTREE_Test$MBG_BTREE_Test_Observed,
 |
 | **[B]** The model does not contain any hyperparameter.
 |
-| **[C]** The cross-validated model performance of the final model is summarized as follows:
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
 |      **[C.2]** AUROC = 0.87369
 |
@@ -1602,7 +1603,7 @@ BAL_LDA_Test_ROC <- roc(response = BAL_LDA_Test$BAL_LDA_Test_Observed,
 | **[B]** The model contains 1 hyperparameter:
 |      **[B.1]** <span style="color: #FF0000">cp</span> = complexity parameter threshold made to vary across a range of values equal to 0.001 to 0.020
 |
-| **[C]** The cross-validated model performance of the final model is summarized as follows:
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves cp=0.001
 |      **[C.2]** AUROC = 0.88434
 |
@@ -1703,7 +1704,7 @@ BAL_CART_Test_ROC <- roc(response = BAL_CART_Test$BAL_CART_Test_Observed,
 |      **[B.1]** <span style="color: #FF0000">sigma</span> = sigma held constant at a value of 0.21332
 |      **[B.2]** <span style="color: #FF0000">C</span> = cost made to vary across a range of 14 default values
 |
-| **[C]** The cross-validated model performance of the final model is summarized as follows:
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves sigma=0.21332 and C=32
 |      **[C.2]** AUROC = 0.90950
 |
@@ -1790,7 +1791,7 @@ BAL_SVM_R_Test_ROC <- roc(response = BAL_SVM_R_Test$BAL_SVM_R_Test_Observed,
 | **[B]** The model contains 1 hyperparameter:
 |      **[B.1]** <span style="color: #FF0000">k</span> = number of neighbors made to vary across a range of values equal to 1 to 15
 |
-| **[C]** The cross-validated model performance of the final model is summarized as follows:
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves k=1
 |      **[C.2]** AUROC = 0.89992
 |
@@ -1879,7 +1880,7 @@ BAL_KNN_Test_ROC <- roc(response = BAL_KNN_Test$BAL_KNN_Test_Observed,
 |      **[B.2]** <span style="color: #FF0000">adjust</span> = bandwidth adjustment held constant at a value of FALSE
 |      **[B.3]** <span style="color: #FF0000">usekernel</span> = distribution type made to vary across a range of levels equal to TRUE and FALSE
 |
-| **[C]** The cross-validated model performance of the final model is summarized as follows:
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves fL=2, adjust=FALSE and usekernel=FALSE
 |      **[C.2]** AUROC = 0.88642
 |
@@ -1978,7 +1979,7 @@ BAL_NB_Test_ROC <- roc(response = BAL_NB_Test$BAL_NB_Test_Observed,
 |             **[A.5.3]** <span style="color: #FF0000">usekernel</span> = FALSE
 |
 | **[B]** Among pairs of base learners, high correlation was observed between:
-|      **[B.1]** Linear Discriminant Analysis and Naive Bayes = x.xxxxx
+|      **[B.1]** Linear Discriminant Analysis and Naive Bayes = 0.95358
 |
 |
 
@@ -2027,6 +2028,29 @@ splom(BAL_LIST_RESAMPLES)
 ##################################
 (BAL_LIST_COR <- modelCor(resamples(BAL_LIST)))
 
+##################################
+# Re-consolidating the base learners
+# with the removal of LDA accounting
+# for the high correlation with NB
+##################################
+set.seed(12345678)
+BAL_LIST <- caretList(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                      y = MA_Train$diagnosis,
+                      trControl=RKFold_Control,
+                      metric="ROC",
+                      tuneList=list(
+                        BAL_CART=caretModelSpec(method="rpart", 
+                                                tuneGrid=data.frame(cp=0.001)),
+                        BAL_SVM_R=caretModelSpec(method="svmRadial",
+                                                 preProcess=c("center","scale"),
+                                                 tuneGrid=data.frame(C = 2048, sigma = 0.1790538)),
+                        BAL_KNN=caretModelSpec(method="knn",
+                                               preProcess=c("center","scale"),
+                                               tuneGrid=data.frame(k = 1)),
+                        BAL_NB=caretModelSpec(method="nb",
+                                               tuneGrid=data.frame(usekernel=FALSE,fL = 2,adjust = FALSE)))             
+                        )
+
 ```
 
 </details>
@@ -2039,7 +2063,7 @@ splom(BAL_LIST_RESAMPLES)
 |
 | **[B]** The model does not contain any hyperparameter.
 |
-| **[C]** The cross-validated model performance of the final model is summarized as follows:
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
 |      **[C.2]** ROC Curve AUC = 0.94765
 |
@@ -2103,7 +2127,7 @@ MEL_LR_Test_ROC <- roc(response = MEL_LR_Test$MEL_LR_Test_Observed,
 | **[B]** The model contains 1 hyperparameter:
 |      **[B.1]** <span style="color: #FF0000">mtry</span> = number of randomly selected predictors made to vary across a range of values equal to 2 to 5
 |
-| **[C]** The cross-validated model performance of the final model is summarized as follows:
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves mtry=3
 |      **[C.2]** AUROC = 0.98089
 |
@@ -2160,7 +2184,49 @@ MEL_RF_Test_ROC <- roc(response = MEL_RF_Test$MEL_RF_Test_Observed,
 
 ##  1.8 Algorithm Comparison Summary
 |
-| Details.
+| Model performance comparison:
+|
+| **[A]** Models which are based on boosting and bagging algorithms demonstrated excellent cross-validated and test AUROC metrics:
+|      **[A.1]** **MBS_AB: Adaptive Boosting** (<mark style="background-color: #CCECFF">**adabag**</mark> package)
+|             **[A.1.1]** Cross-Validation AUROC = 0.96475
+|             **[A.1.2]** Test ROC Curve AUROC = 0.99362 
+|      **[A.2]** **MBS_GBM: Stochastic Gradient Boosting** (<mark style="background-color: #CCECFF">**gbm**</mark> package)
+|             **[A.2.1]** Cross-Validation AUROC = 0.95995
+|             **[A.2.2]** Test ROC Curve AUROC = 0.98256 
+|      **[A.3]** **MBS_XGB: Extreme Gradient Boosting** (<mark style="background-color: #CCECFF">**xgboost**</mark> package)
+|             **[A.3.1]** Cross-Validation AUROC = 0.95898
+|             **[A.3.2]** Test ROC Curve AUROC = 0.98306
+|      **[A.4]** **MBG_RF: Random Forest** (<mark style="background-color: #CCECFF">**randomForest**</mark> package)
+|             **[A.4.1]** Cross-Validation AUROC = 0.96549
+|             **[A.4.2]** Test ROC Curve AUROC = 0.99580
+|      **[A.5]** **MBG_BCART: Bagged Classification and Regression Trees** (<mark style="background-color: #CCECFF">**ipred**</mark>, <mark style="background-color: #CCECFF">**plyr**</mark> and <mark style="background-color: #CCECFF">**e1071**</mark> packages)
+|             **[A.5.1]** Cross-Validation AUROC = 0.95790
+|             **[A.5.2]** Test ROC Curve AUROC = 0.99287
+|
+| **[B]** Models implemented as base learners which are not based on boosting and bagging algorithms individually demonstrated inferior cross-validated and test AUROC metrics:
+|      **[B.1]** **BAL_LDA: Linear Discriminant Analysis** (<mark style="background-color: #CCECFF">**MASS**</mark> package)
+|             **[B.1.1]** Cross-Validation AUROC = 0.87369
+|             **[B.1.2]** Test ROC Curve AUROC = 0.89847 
+|      **[B.2]** **BAL_CART: Classification and Regression Trees** (<mark style="background-color: #CCECFF">**rpart**</mark> package)
+|             **[B.2.1]** Cross-Validation AUROC = 0.86999
+|             **[B.2.2]** Test ROC Curve AUROC = 0.88434 
+|      **[B.3]** **BAL_SVM_R: Support Vector Machine - Radial Basis Function Kernel** (<mark style="background-color: #CCECFF">**kernlab**</mark> package)
+|             **[B.3.1]** Cross-Validation AUROC = 0.90950
+|             **[B.3.2]** Test ROC Curve AUROC = 0.91591
+|      **[B.4]** **BAL_KNN: K-Nearest Neighbors** (<mark style="background-color: #CCECFF">**caret**</mark> package)
+|             **[B.4.1]** Cross-Validation AUROC = 0.89992
+|             **[B.4.2]** Test ROC Curve AUROC = 0.97183
+|      **[B.5]** **BAL_NB: Naive Bayes** (<mark style="background-color: #CCECFF">**klaR**</mark> package)
+|             **[B.5.1]** Cross-Validation AUROC = 0.88642
+|             **[B.5.2]** Test ROC Curve AUROC = 0.90383
+|
+| **[C]** The model stacking process demonstrated improved cross-validated and test AUROC metrics as compared to individual base learners:
+|      **[C.1]** **MEL_LR: Logistic Regression** (<mark style="background-color: #CCECFF">**stats**</mark> package)
+|             **[C.1.1]** Cross-Validation AUROC = 0.94765
+|             **[C.1.2]** Test ROC Curve AUROC = 0.98625 
+|      **[C.2]** **MEL_RF: Classification and Regression Trees** (<mark style="background-color: #CCECFF">**randomForest**</mark> package)
+|             **[C.2.1]** Cross-Validation AUROC = 0.98089
+|             **[C.2.2]** Test ROC Curve AUROC = 0.98926
 |
 |
 
@@ -2176,7 +2242,7 @@ MEL_RF_Test_ROC <- roc(response = MEL_RF_Test$MEL_RF_Test_Observed,
                                            MBS_GBM = MBS_GBM_Tune,
                                            MBS_XGB = MBS_XGB_Tune,
                                            MBG_RF = MBG_RF_Tune,
-                                           MBG_BTREE = MBG_BTREE_Tune,
+                                           MBG_BCART = MBG_BCART_Tune,
                                            BAL_LDA = BAL_LDA_Tune,
                                            BAL_CART = BAL_CART_Tune,
                                            BAL_KNN = BAL_KNN_Tune,
@@ -2202,22 +2268,22 @@ bwplot(Consolidated_Resampling,
 ##################################
 
 Model <- c('MBS_AB','MBS_GBM','MBS_XGB',
-           'MBG_RF','MBG_BTREE',
+           'MBG_RF','MBG_BCART',
            'BAL_LDA','BAL_CART','BAL_SVM_R','BAL_KNN','BAL_NB',
            'MEL_LR','MEL_RF',
            'MBS_AB','MBS_GBM','MBS_XGB',
-           'MBG_RF','MBG_BTREE',
+           'MBG_RF','MBG_BCART',
            'BAL_LDA','BAL_CART','BAL_SVM_R','BAL_KNN','BAL_NB',
            'MEL_LR','MEL_RF')
 
 Set <- c(rep('Cross-Validation',12),rep('Test',12))
 
 AUROC <- c(MBS_AB_Train_AUROC,MBS_GBM_Train_AUROC,MBS_XGB_Train_AUROC,
-           MBG_RF_Train_AUROC,MBG_BTREE_Train_AUROC,
+           MBG_RF_Train_AUROC,MBG_BCART_Train_AUROC,
            BAL_LDA_Train_AUROC,BAL_CART_Train_AUROC,BAL_SVM_R_Train_AUROC,BAL_KNN_Train_AUROC,BAL_NB_Train_AUROC,
            MEL_LR_Train_AUROC,MEL_RF_Train_AUROC,
            MBS_AB_Test_AUROC,MBS_GBM_Test_AUROC,MBS_XGB_Test_AUROC,
-           MBG_RF_Test_AUROC,MBG_BTREE_Test_AUROC,
+           MBG_RF_Test_AUROC,MBG_BCART_Test_AUROC,
            BAL_LDA_Test_AUROC,BAL_CART_Test_AUROC,BAL_SVM_R_Test_AUROC,BAL_KNN_Test_AUROC,BAL_NB_Test_AUROC,
            MEL_LR_Test_AUROC,MEL_RF_Test_AUROC)
 
@@ -2232,7 +2298,7 @@ AUROC_Summary$Model <- factor(AUROC_Summary$Model,
                                          'MBS_GBM',
                                          'MBS_XGB',
                                          'MBG_RF',
-                                         'MBG_BTREE',
+                                         'MBG_BCART',
                                          'BAL_LDA',
                                          'BAL_CART',
                                          'BAL_SVM_R',
@@ -2263,6 +2329,7 @@ print(AUROC_Summary, row.names=FALSE)
 |
 # **2. References**
 |
+| **[Book]** [Ensemble Methods for Machine Learning](https://www.manning.com/books/ensemble-methods-for-machine-learning) by Gautam Kunapuli
 | **[Book]** [Applied Predictive Modeling](http://appliedpredictivemodeling.com/) by Max Kuhn and Kjell Johnson
 | **[Book]** [An Introduction to Statistical Learning](https://www.statlearning.com/) by Gareth James, Daniela Witten, Trevor Hastie and Rob Tibshirani
 | **[Book]** [Multivariate Data Visualization with R](http://lmdvr.r-forge.r-project.org/figures/figures.html) by Deepayan Sarkar
@@ -2294,7 +2361,11 @@ print(AUROC_Summary, row.names=FALSE)
 | **[R Package]** [adabag](https://cran.r-project.org/web/packages/adabag/adabag.pdf) by Esteban Alfaro, Matias Gamez and Noelia Garcia
 | **[R Package]** [gbm](https://cran.r-project.org/web/packages/gbm/gbm.pdf) by Brandon Greenwell, Bradley Boehmke and Jay Cunningham 
 | **[R Package]** [xgboost](https://cran.r-project.org/web/packages/xgboost/xgboost.pdf) by Jiaming Yuan
-| **[Article]** [A Brief Introduction to caretEnsemble)](https://cran.r-project.org/web/packages/caretEnsemble/vignettes/caretEnsemble-intro.html) by Zachary Deane-Mayer
+| **[Article]** [A Brief Introduction to caretEnsemble](https://cran.r-project.org/web/packages/caretEnsemble/vignettes/caretEnsemble-intro.html) by Zachary Deane-Mayer
+| **[Article]** [A Gentle Introduction to Ensemble Learning Algorithms](https://machinelearningmastery.com/tour-of-ensemble-learning-algorithms/) by Jason Brownlee
+| **[Article]** [Ensemble Methods: Elegant Techniques to Produce Improved Machine Learning Results](https://www.toptal.com/machine-learning/ensemble-methods-machine-learning) by Necati Demir
+| **[Article]** [The Complete Guide to Ensemble Learning](https://www.v7labs.com/blog/ensemble-learning) by Rohit Kundu
+| **[Article]** [Develop an Intuition for How Ensemble Learning Works](https://machinelearningmastery.com/how-ensemble-learning-works/) by Jason Brownlee
 | **[Article]** [How to Build an Ensemble Of Machine Learning Algorithms in R](https://machinelearningmastery.com/machine-learning-ensembles-with-r/) by Jason Brownlee
 | **[Article]** [Ensemble Learning: Bagging, Boosting, and Stacking](https://towardsai.net/p/machine-learning/ensemble-learning-bagging-boosting-and-stacking) by Towards AI Team
 | **[Article]** [Bagging, Boosting, and Stacking in Machine Learning](https://www.baeldung.com/cs/bagging-boosting-stacking-ml-ensemble-models) by Emmanuella Budu
