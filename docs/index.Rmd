@@ -1241,7 +1241,26 @@ MBS_XGB_Test_ROC <- roc(response = MBS_XGB_Test$MBS_XGB_Test_Observed,
 
 ###  1.6.1 Random Forest (MBG_RF)
 |
-| Details.
+| [Random Forest](https://link.springer.com/article/10.1023/A:1010933404324) is an ensemble learning method made up of a large set of small decision trees called estimators, with each producing its own prediction. The random forest model aggregates the predictions of the estimators to produce a more accurate prediction. The algorithm involves bootstrap aggregating (where smaller subsets of the training data are repeatedly subsampled with replacement), random subspacing (where a subset of features are sampled and used to train each individual estimator), estimator training (where unpruned decision trees are formulated for each estimator) and inference by aggregating the predictions of all estimators.
+|
+| **[A]** The random forest model from the  <mark style="background-color: #CCECFF">**randomForest**</mark> package was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model contains 1 hyperparameter:
+|      **[B.1]** <span style="color: #FF0000">mtry</span> = number of randomly selected predictors made to vary across a range of values equal to 25 to 125
+|
+| **[C]** The cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves mtry=75
+|      **[C.2]** ROC Curve AUC = 0.96097
+|
+| **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
+|      **[D.1]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** ROC Curve AUC = 0.99354
 |
 |
 
@@ -1320,7 +1339,25 @@ MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
 
 ###  1.6.2 Bagged Classification and Regression Trees (MBG_BTREE)
 |
-| Details.
+| [Bagged Classification and Regression Trees](https://link.springer.com/article/10.1007/BF00058655) combine bootstrapping and decision trees to construct an ensemble. The modeling process involves generating bootstrap samples of the original data, training an unpruned decision tree for each bootstrap subset of the data and implementing an ensemble voting for all the individual decision tree predictions to formulate the final prediction. The bootstrap aggregation (bagging) mechanism improves the model performance by reducing variance. Although the individual decision trees in the model are identically distributed, they are not necessarily independent and share similar structure. This similarity, known as tree correlation, is an essential factor that prevents further reduction of variance.
+|
+| **[A]** The bagged CART model from the <mark style="background-color: #CCECFF">**ipred**</mark>, <mark style="background-color: #CCECFF">**plyr**</mark> and <mark style="background-color: #CCECFF">**e1071**</mark> packages was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model does not contain any hyperparameter.
+|
+| **[C]** The cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
+|      **[C.2]** ROC Curve AUC = 0.95790
+|
+| **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
+|      **[D.1]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** ROC Curve AUC = 0.99287
 |
 |
 
@@ -2115,7 +2152,9 @@ print(AUROC_Summary, row.names=FALSE)
 | **[Article]** [Essence of Boosting Ensembles for Machine Learning](https://machinelearningmastery.com/essence-of-boosting-ensembles-for-machine-learning/) by Jason Brownlee
 | **[Article]** [Ensemble Modeling with R](https://www.pluralsight.com/guides/ensemble-modeling-with-r) by Deepika Singh
 | **[Article]** [Creating Ensemble Models in R](https://dustinrogers.github.io/Ensemble-Models/) by Dustin Rogers
-| **[Publication]** [Ensemble Selection from Libraries of Models](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.60.2859&rep=rep1&type=pdf) by Rich Caruana, Alexandru Niculescu-Mizil, Geoff Crew and Alex Ksikes (Proceedings of the 21 st International Conference on Machine Learning,)
+| **[Publication]** [Ensemble Selection from Libraries of Models](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.60.2859&rep=rep1&type=pdf) by Rich Caruana, Alexandru Niculescu-Mizil, Geoff Crew and Alex Ksikes (Proceedings of the 21 st International Conference on Machine Learning)
+| **[Publication]** [Random Forest ](https://link.springer.com/article/10.1023/A:1010933404324) by Leo Breiman (Machine Learning)
+| **[Publication]** [Bagging Predictors](https://link.springer.com/article/10.1007/BF00058655) by Leo Breiman (Machine Learning)
 | **[Course]** [Applied Data Mining and Statistical Learning](https://online.stat.psu.edu/stat508/) by Penn State Eberly College of Science
 |
 |
