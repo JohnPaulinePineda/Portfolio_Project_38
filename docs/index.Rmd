@@ -1437,7 +1437,20 @@ MBG_BTREE_Test_ROC <- roc(response = MBG_BTREE_Test$MBG_BTREE_Test_Observed,
 
 ###  1.7.1 Base Learner Model Development using Linear Discriminant Analysis (BAL_LDA)
 |
-| Details.
+| [Linear Discriminant Analysis](https://www.semanticscholar.org/paper/THE-USE-OF-MULTIPLE-MEASUREMENTS-IN-TAXONOMIC-Fisher/ab21376e43ac90a4eafd14f0f02a0c87502b6bbf) finds a linear combination of features that best separates the classes in a data set by projecting the data onto a lower-dimensional space that maximizes the separation between the classes. The algorithm searches for a set of linear discriminants that maximize the ratio of between-class variance to within-class variance by evaluating directions in the feature space that best separate the different classes of data. LDA assumes that the data has a Gaussian distribution and that the covariance matrices of the different classes are equal, in addition to the data being linearly separable by the presence of a linear decision boundary can accurately classify the different classes.
+|
+| **[A]** The linear discriminant analysis model from the  <mark style="background-color: #CCECFF">**MASS**</mark> package was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model does not contain any hyperparameter.
+|
+| **[C]** The cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
+|      **[C.2]** ROC Curve AUC = 0.87369
+|
+| **[D]** The model does not allow for ranking of predictors in terms of variable importance.
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** ROC Curve AUC = 0.89847
 |
 |
 
@@ -1479,16 +1492,7 @@ BAL_LDA_Tune$results
 # Identifying and plotting the
 # best model predictors
 ##################################
-BAL_LDA_VarImp <- varImp(BAL_LDA_Tune, scale = TRUE)
-plot(BAL_LDA_VarImp,
-     top=6,
-     scales=list(y=list(cex = .95)),
-     main="Ranked Variable Importance : Linear Discriminant Analysis",
-     xlab="Scaled Variable Importance Metrics",
-     ylab="Predictors",
-     cex=2,
-     origin=0,
-     alpha=0.45)
+# model does not support variable importance measurement
 
 ##################################
 # Independently evaluating the model
@@ -1517,7 +1521,26 @@ BAL_LDA_Test_ROC <- roc(response = BAL_LDA_Test$BAL_LDA_Test_Observed,
 
 ###  1.7.2 Base Learner Model Development using Classification and Regression Trees (BAL_CART)
 |
-| Details.
+| [Classification and Regression Trees](https://www.semanticscholar.org/paper/Classification-and-Regression-Trees-Breiman-Friedman/8017699564136f93af21575810d557dba1ee6fc6) construct binary trees for both both nominal and continuous input attributes using Gini Index as its splitting criteria. The algorithm handles missing values by surrogating tests to approximate outcomes. In the pruning phase, CART uses pre-pruning technique called Cost-Complexity pruning to remove redundant branches from the decision tree to improve the accuracy. In the first stage, a sequence of increasingly smaller trees are built on the training data. In the second stage, one of these tree is chosen as the pruned tree, based on its classification accuracy on a pruning set, adopting a cross-validated method in its pruning technique.
+|
+| **[A]** The classification and regression trees model from the  <mark style="background-color: #CCECFF">**rpart**</mark> package was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model contains 1 hyperparameter:
+|      **[B.1]** <span style="color: #FF0000">cp</span> = complexity parameter threshold made to vary across a range of values equal to 0.001 to 0.020
+|
+| **[C]** The cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves cp=0.001
+|      **[C.2]** ROC Curve AUC = 0.88434
+|
+| **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
+|      **[D.1]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** ROC Curve AUC = 0.88434
 |
 |
 
@@ -1598,7 +1621,22 @@ BAL_CART_Test_ROC <- roc(response = BAL_CART_Test$BAL_CART_Test_Observed,
 
 ###  1.7.3 Base Learner Model Development using Support Vector Machine - Radial Basis Function Kernel (BAL_SVM_R)
 |
-| Details.
+| [Support Vector Machine](https://dl.acm.org/doi/10.1145/130385.130401) plots each observation in an N-dimensional space corresponding to the number of features in the data set and finds a hyperplane that maximally separates the different classes by a maximally large margin (which is defined as the distance between the hyperplane and the closest data points from each class). The algorithm applies kernel transformation by mapping non-linearly separable data using the similarities between the points in a high-dimensional feature space for improved discrimination.
+|
+| **[A]** The support vector machine (radial basis function kernel) model from the  <mark style="background-color: #CCECFF">**kernlab**</mark> package was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model contains 2 hyperparameters:
+|      **[B.1]** <span style="color: #FF0000">sigma</span> = sigma held constant at a value of 0.21332
+|      **[B.2]** <span style="color: #FF0000">C</span> = cost made to vary across a range of 14 default values
+|
+| **[C]** The cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves sigma=0.21332 and C=32
+|      **[C.2]** ROC Curve AUC = 0.90950
+|
+| **[D]** The model does not allow for ranking of predictors in terms of variable importance.
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** ROC Curve AUC = 0.91591
 |
 |
 
@@ -1671,7 +1709,21 @@ BAL_SVM_R_Test_ROC <- roc(response = BAL_SVM_R_Test$BAL_SVM_R_Test_Observed,
 
 ###  1.7.4 Base Learner Model Development using K-Nearest Neighbors (BAL_KNN)
 |
-| Details.
+| [K-Nearest Neighbors](https://ieeexplore.ieee.org/document/1053964) use proximity to make predictions about the class grouping of an individual data point. The algorithm examines the labels of a chosen number of data points surrounding a target data point given a distance-based similarity metric, in order to make a prediction about the class that the data point falls into. The process involves setting a value for the chosen number of neighbors, calculating the distance between the target point across all instances, sorting the calculated distances, obtaining the labels of the top entries and returning the prediction for the target point.
+|
+| **[A]** The k-nearest neighbors model was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model contains 1 hyperparameter:
+|      **[B.1]** <span style="color: #FF0000">k</span> = number of neighbors made to vary across a range of values equal to 1 to 15
+|
+| **[C]** The cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves k=1
+|      **[C.2]** ROC Curve AUC = 0.89992
+|
+| **[D]** The model does not allow for ranking of predictors in terms of variable importance.
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** ROC Curve AUC = 0.97183
 |
 |
 
@@ -1744,7 +1796,23 @@ BAL_KNN_Test_ROC <- roc(response = BAL_KNN_Test$BAL_KNN_Test_Observed,
 
 ###  1.7.5 Base Learner Model Development using Naive Bayes (BAL_NB)
 |
-| Details.
+| [Naive Bayes Classifier](https://www.jstor.org/stable/2682766) categorizes instances by applying Bayes Theorem in determining posterior probabilities as conditioned by the likelihood of features, and prior probabilities pertaining to both events and features. The algorithm naively assumes independence between features and assigns the same weight (degree of significance) to all given features. The class conditional probabilities and the prior probabilities are calculated to yield the posterior probability, and operates by returning the class, which has the maximum posterior probability out of a group of classes.
+|
+| **[A]** The naive bayes model from the  <mark style="background-color: #CCECFF">**klaR**</mark> package was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model contains 3 hyperparameters:
+|      **[B.1]** <span style="color: #FF0000">fL</span> = laplace correction held constant at a value of 2
+|      **[B.2]** <span style="color: #FF0000">adjust</span> = bandwidth adjustment held constant at a value of FALSE
+|      **[B.3]** <span style="color: #FF0000">usekernel</span> = distribution type made to vary across a range of levels equal to TRUE and FALSE
+|
+| **[C]** The cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves fL=2, adjust=FALSE and usekernel=FALSE
+|      **[C.2]** ROC Curve AUC = 0.88642
+|
+| **[D]** The model does not allow for ranking of predictors in terms of variable importance.
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** ROC Curve AUC = 0.90383
 |
 |
 
@@ -1819,7 +1887,7 @@ BAL_NB_Test_ROC <- roc(response = BAL_NB_Test$BAL_NB_Test_Observed,
 </details>
 
 
-###  1.7.6 Ensemble Learner Model Development using Linear Regression (ENL)
+###  1.7.6 Ensemble Learner Model Development (ENL)
 |
 | Details.
 |
@@ -2155,6 +2223,11 @@ print(AUROC_Summary, row.names=FALSE)
 | **[Publication]** [Ensemble Selection from Libraries of Models](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.60.2859&rep=rep1&type=pdf) by Rich Caruana, Alexandru Niculescu-Mizil, Geoff Crew and Alex Ksikes (Proceedings of the 21 st International Conference on Machine Learning)
 | **[Publication]** [Random Forest ](https://link.springer.com/article/10.1023/A:1010933404324) by Leo Breiman (Machine Learning)
 | **[Publication]** [Bagging Predictors](https://link.springer.com/article/10.1007/BF00058655) by Leo Breiman (Machine Learning)
+| **[Publication]** [The Use of Multiple Measurements in Taxonomic Problems](https://www.semanticscholar.org/paper/THE-USE-OF-MULTIPLE-MEASUREMENTS-IN-TAXONOMIC-Fisher/ab21376e43ac90a4eafd14f0f02a0c87502b6bbf) by Ronald Fisher (Annals of Human Genetics)
+| **[Publication]** [Classification and Regression Trees](https://www.semanticscholar.org/paper/Classification-and-Regression-Trees-Breiman-Friedman/8017699564136f93af21575810d557dba1ee6fc6) by Leo Breiman, Jerome Friedman, Richard Olshen, and Charles Stone (Computer Science)
+| **[Publication]** [A Training Algorithm for Optimal Margin Classifiers](https://dl.acm.org/doi/10.1145/130385.130401) by Bernhard Boser, Isabelle Guyon and Vladimir Vapnik (Proceedings of the Fifth Annual Workshop on Computational Learning Theory)
+| **[Publication]** [Nearest Neighbor Pattern Classification](https://ieeexplore.ieee.org/document/1053964) Thomas Cover and Peter Hart (IEEE Transactions on Information Theory)
+| **[Publication]** [Who Discovered Bayes's Theorem?](https://www.jstor.org/stable/2682766) by Stephen Stigler (The American Statistician)
 | **[Course]** [Applied Data Mining and Statistical Learning](https://online.stat.psu.edu/stat508/) by Penn State Eberly College of Science
 |
 |
