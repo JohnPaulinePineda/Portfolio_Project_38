@@ -1,7 +1,7 @@
 ---
 title: 'Supervised Learning : Exploring Boosting, Bagging and Stacking Algorithms for Ensemble Learning'
 author: "John Pauline Pineda"
-date: "August 23, 2023"
+date: "August 22, 2023"
 output: 
   html_document:
     toc: true
@@ -19,8 +19,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
 |
 | This project explores different ensemble learning approaches which combine the predictions from multiple models in an effort to achieve better predictive performance using various helpful packages in <mark style="background-color: #CCECFF">**R**</mark>. The ensemble frameworks applied in the analysis were grouped into three classes including boosting models which add ensemble members sequentially that correct the predictions made by prior models and outputs a weighted average of the predictions; bagging models which fit many decision trees on different samples of the same dataset and averaging the predictions; and stacking which consolidate many different models types on the same data and using another model to learn how to best combine the predictions. Boosting models included the **Adaptive Boosting**, **Stochastic Gradient Descent** and **Extreme Gradient Boosting** algorithms. Bagging models applied were the **Random Forest** and **Bagged Classification and Regression Trees** algorithms. Individual base learners including the **Linear Discriminant Analysis**, **Classification and Regression Trees**, **Support Vector Machine - Radial Basis Function Kernel**,**K-Nearest Neighbors** and **Naive Bayes** algorithms were evaluated for correlation and stacked together as contributors to the **Logistic Regression** and **Random Forest** meta-models. The resulting predictions derived from all ensemble learning models were evaluated based on their discrimination power using the area under the receiver operating characteristic curve (AUROC) metric.
 |
-| Ensemble learning aims to improve predictive performance by reaching a consensus in predictions through the fusion of the salient properties of two or more models. The final ensemble learning framework is more robust than the individual members that constitute the ensemble because of the variance reduction in the prediction errors. The algorithms applied in this study (mostly contained in the <mark style="background-color: #CCECFF">**caret**</mark> and <mark style="background-color: #CCECFF">**caretEnsemble**</mark> packages) attempt to capture complementary information from the different statistically diverse learners to further advance prediction accuracy over that of any of the contributing models. 
-|
+| Ensemble learning aims to improve predictive performance by reaching a consensus in predictions through the fusion of the salient properties of two or more models. The final ensemble learning framework is more robust than the individual members that constitute the ensemble because of the variance reduction in the prediction errors. The algorithms applied in this study (mostly contained in the <mark style="background-color: #CCECFF">**caret**</mark> and <mark style="background-color: #CCECFF">**caretEnsemble**</mark> packages) attempt to capture complementary information from similar or diverse learners, as applicable, to further advance prediction accuracy over that of any of the contributing models. 
 |
 ##  1.1 Sample Data
 |
@@ -2039,6 +2038,8 @@ BAL_LIST <- caretList(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
                       trControl=RKFold_Control,
                       metric="ROC",
                       tuneList=list(
+                        BAL_LDA=caretModelSpec(method="lda", 
+                                               preProcess=c("center","scale")),
                         BAL_CART=caretModelSpec(method="rpart", 
                                                 tuneGrid=data.frame(cp=0.001)),
                         BAL_SVM_R=caretModelSpec(method="svmRadial",
@@ -2046,9 +2047,7 @@ BAL_LIST <- caretList(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
                                                  tuneGrid=data.frame(C = 2048, sigma = 0.1790538)),
                         BAL_KNN=caretModelSpec(method="knn",
                                                preProcess=c("center","scale"),
-                                               tuneGrid=data.frame(k = 1)),
-                        BAL_NB=caretModelSpec(method="nb",
-                                               tuneGrid=data.frame(usekernel=FALSE,fL = 2,adjust = FALSE)))             
+                                               tuneGrid=data.frame(k = 1)))             
                         )
 
 ```
@@ -2065,11 +2064,11 @@ BAL_LIST <- caretList(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
-|      **[C.2]** ROC Curve AUC = 0.94765
+|      **[C.2]** ROC Curve AUC = 0.94722
 |
 |
 | **[D]** The independent test model performance of the final model is summarized as follows:
-|      **[D.1]** ROC Curve AUC = 0.98625
+|      **[D.1]** ROC Curve AUC = 0.98826
 |
 |
 
@@ -2129,10 +2128,10 @@ MEL_LR_Test_ROC <- roc(response = MEL_LR_Test$MEL_LR_Test_Observed,
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves mtry=3
-|      **[C.2]** AUROC = 0.98089
+|      **[C.2]** AUROC = 0.97267
 |
 | **[D]** The independent test model performance of the final model is summarized as follows:
-|      **[D.1]** AUROC = 0.98926
+|      **[D.1]** AUROC = 0.99065
 |
 |
 
@@ -2222,11 +2221,11 @@ MEL_RF_Test_ROC <- roc(response = MEL_RF_Test$MEL_RF_Test_Observed,
 |
 | **[C]** The model stacking process demonstrated improved cross-validated and test AUROC metrics as compared to individual base learners:
 |      **[C.1]** **MEL_LR: Logistic Regression** (<mark style="background-color: #CCECFF">**stats**</mark> package)
-|             **[C.1.1]** Cross-Validation AUROC = 0.94765
-|             **[C.1.2]** Test ROC Curve AUROC = 0.98625 
+|             **[C.1.1]** Cross-Validation AUROC = 0.94722
+|             **[C.1.2]** Test ROC Curve AUROC = 0.98826 
 |      **[C.2]** **MEL_RF: Classification and Regression Trees** (<mark style="background-color: #CCECFF">**randomForest**</mark> package)
-|             **[C.2.1]** Cross-Validation AUROC = 0.98089
-|             **[C.2.2]** Test ROC Curve AUROC = 0.98926
+|             **[C.2.1]** Cross-Validation AUROC = 0.97267
+|             **[C.2.2]** Test ROC Curve AUROC = 0.99065
 |
 |
 
