@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
 
 # **1. Table of Contents**
 |
-| This project explores different ensemble learning approaches which combine the predictions from multiple models in an effort to achieve better predictive performance using various helpful packages in <mark style="background-color: #CCECFF">**R**</mark>. The ensemble frameworks applied in the analysis were grouped into three classes including boosting models which add ensemble members sequentially that correct the predictions made by prior models and outputs a weighted average of the predictions; bagging models which fit many decision trees on different samples of the same dataset and averaging the predictions; and stacking which consolidate many different models types on the same data and using another model to learn how to best combine the predictions. Boosting models included the **Adaptive Boosting**, **Stochastic Gradient Descent** and **Extreme Gradient Boosting** algorithms. Bagging models applied were the **Random Forest** and **Bagged Classification and Regression Trees** algorithms. Individual base learners including the **Linear Discriminant Analysis**, **Classification and Regression Trees**, **Support Vector Machine - Radial Basis Function Kernel**,**K-Nearest Neighbors** and **Naive Bayes** algorithms were evaluated for correlation and stacked together as contributors to the **Logistic Regression** and **Random Forest** meta-models. The resulting predictions derived from all ensemble learning models were evaluated based on their discrimination power using the area under the receiver operating characteristic curve (AUROC) metric.
+| This project explores different ensemble learning approaches which combine the predictions from multiple models in an effort to achieve better predictive performance using various helpful packages in <mark style="background-color: #CCECFF">**R**</mark>. The ensemble frameworks applied in the analysis were grouped into three classes including boosting models which add ensemble members sequentially that correct the predictions made by prior models and outputs a weighted average of the predictions; bagging models which fit many decision trees on different samples of the same dataset and averaging the predictions; and stacking which consolidate many different models types on the same data and using another model to learn how to best combine the predictions. Boosting models included the **Adaptive Boosting**, **Stochastic Gradient Descent** and **Extreme Gradient Boosting** algorithms. Bagging models applied were the **Random Forest** and **Bagged Classification and Regression Trees** algorithms. Individual base learners including the **Linear Discriminant Analysis**, **Classification and Regression Trees**, **Support Vector Machine - Radial Basis Function Kernel**, **K-Nearest Neighbors** and **Naive Bayes** algorithms were evaluated for correlation and stacked together as contributors to the **Logistic Regression** and **Random Forest** meta-models. The resulting predictions derived from all ensemble learning models were evaluated based on their discrimination power using the area under the receiver operating characteristic curve (AUROC) metric.
 |
 | Ensemble learning aims to improve predictive performance by reaching a consensus in predictions through the fusion of the salient properties of two or more models. The final ensemble learning framework is more robust than the individual members that constitute the ensemble because of the variance reduction in the prediction errors. The algorithms applied in this study (mostly contained in the <mark style="background-color: #CCECFF">**caret**</mark> and <mark style="background-color: #CCECFF">**caretEnsemble**</mark> packages) attempt to capture complementary information from similar or diverse learners, as applicable, to further advance prediction accuracy over that of any of the contributing models. 
 |
@@ -864,7 +864,7 @@ PMA <- DPA_BoxCoxTransformed[,!names(DPA_BoxCoxTransformed) %in% c("concavity_se
 |      **[A.4]** <span style="color: #FF0000">compactness_mean</span> = 0.86
 |      **[A.5]** <span style="color: #FF0000">compactness_worst</span> = 0.86
 |
-| **[B]** To allow a better comparison of the ensemble methods, only predictors which demonstrated fair discrimination between <span style="color: #FF0000">diagnosis=M</span> and <span style="color: #FF0000">diagnosis=B</span> in terms of the area under the receiver operating characteristics curve (0.70<AUROC<0.80) were selected to proceed with the modelling process, enumerated as follows:
+| **[B]** To allow a better comparison of the ensemble learning methods, only predictors which demonstrated fair discrimination between <span style="color: #FF0000">diagnosis=M</span> and <span style="color: #FF0000">diagnosis=B</span> in terms of the area under the receiver operating characteristics curve (0.70<AUROC<0.80) were selected to proceed with the modelling process, enumerated as follows:
 |      **[B.1]** <span style="color: #FF0000">texture_worst</span> = 0.78
 |      **[B.2]** <span style="color: #FF0000">texture_mean</span> = 0.77
 |      **[B.3]** <span style="color: #FF0000">smoothness_worst</span> = 0.75
@@ -1978,7 +1978,10 @@ BAL_NB_Test_ROC <- roc(response = BAL_NB_Test$BAL_NB_Test_Observed,
 |             **[A.5.3]** <span style="color: #FF0000">usekernel</span> = FALSE
 |
 | **[B]** Among pairs of base learners, high correlation was observed between:
-|      **[B.1]** Linear Discriminant Analysis and Naive Bayes = 0.95358
+|      **[B.1]** Naive Bayes and Linear Discriminant Analysis = 0.95358
+|      **[B.2]** Naive Bayes and Classification and Regression Trees = 0.61158
+|
+| **[C]** To maintain diversity among the base learners, the Naive Bayes model contributor was removed prior to the model stacking process.
 |
 |
 
@@ -2329,6 +2332,7 @@ print(AUROC_Summary, row.names=FALSE)
 # **2. References**
 |
 | **[Book]** [Ensemble Methods for Machine Learning](https://www.manning.com/books/ensemble-methods-for-machine-learning) by Gautam Kunapuli
+| **[Book]** [Statistics and Machine Learning in Python](https://duchesnay.github.io/pystatsml/index.html) by Edouard Duchesnay, Tommy Lofstedt and Feki Younes
 | **[Book]** [Applied Predictive Modeling](http://appliedpredictivemodeling.com/) by Max Kuhn and Kjell Johnson
 | **[Book]** [An Introduction to Statistical Learning](https://www.statlearning.com/) by Gareth James, Daniela Witten, Trevor Hastie and Rob Tibshirani
 | **[Book]** [Multivariate Data Visualization with R](http://lmdvr.r-forge.r-project.org/figures/figures.html) by Deepayan Sarkar
@@ -2374,7 +2378,7 @@ print(AUROC_Summary, row.names=FALSE)
 | **[Article]** [Creating Ensemble Models in R](https://dustinrogers.github.io/Ensemble-Models/) by Dustin Rogers
 | **[Article]** [Stacking Ensemble Machine Learning With Python](https://machinelearningmastery.com/stacking-ensemble-machine-learning-with-python/) by Jason Brownlee
 | **[Article]** [Stacking Machine Learning: Everything You Need to Know](https://www.machinelearningpro.org/stacking-machine-learning/) by Ada Parker
-| **[Article]** [Essence of Stacking Ensembles for Machine Learning](https://machinelearningmastery.com/essence-of-stacking-ensembles-for-machine-learning/) by Jason Brownlee
+| **[Article]** [Ensemble Learning: Bagging, Boosting and Stacking](https://duchesnay.github.io/pystatsml/machine_learning/ensemble_learning.html) by Edouard Duchesnay, Tommy Lofstedt and Feki Younes
 | **[Article]** [Stack Machine Learning Models: Get Better Results](https://developer.ibm.com/articles/stack-machine-learning-models-get-better-results/) by IBM Team
 | **[Article]** [Gradient Boosting vs AdaBoost vs XGBoost vs CatBoost vs LightGBM](https://www.geeksforgeeks.org/gradientboosting-vs-adaboost-vs-xgboost-vs-catboost-vs-lightgbm/) by Geeks for Geeks Team
 | **[Article]** [A Gentle Introduction to the Gradient Boosting Algorithm for Machine Learning](https://machinelearningmastery.com/gentle-introduction-gradient-boosting-algorithm-machine-learning/) by Jason Brownlee
