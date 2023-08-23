@@ -872,6 +872,10 @@ PMA <- DPA_BoxCoxTransformed[,!names(DPA_BoxCoxTransformed) %in% c("concavity_se
 |      **[B.5]** <span style="color: #FF0000">compactness_se</span> = 0.73
 |      **[B.6]** <span style="color: #FF0000">smoothness_mean</span> = 0.72
 |
+| **[C]** Using an 80-20 ratio, train and test sets were created from the preliminary dataset for the subsequent analysis and modelling steps:
+|      **[C.1]** Training Set = 912 observations
+|      **[C.2]** Test Set = 226 observations
+|
 |
 
 <details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
@@ -960,6 +964,9 @@ set.seed(12345678)
 MA_Train_Index  <- createDataPartition(DPA$diagnosis,p=0.8)[[1]]
 MA_Train        <- DPA[ MA_Train_Index, ]
 MA_Test         <- DPA[-MA_Train_Index, ]
+
+dim(MA_Train)
+dim(MA_Test)
 
 ```
 
