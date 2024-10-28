@@ -1,6 +1,6 @@
 ---
 title: 'Supervised Learning : Exploring Boosting, Bagging and Stacking Algorithms for Ensemble Learning'
-author: "John Pauline Pineda"
+author: "<b><a href='https://github.com/JohnPaulinePineda'>John Pauline Pineda</a></b>"
 date: "August 22, 2023"
 output: 
   html_document:
@@ -83,7 +83,7 @@ library(RANN)
 library(pls)
 library(corrplot)
 library(lares)
-library(DMwR)
+library(DMwR2)
 library(gridExtra)
 library(rattle)
 library(RColorBrewer)
@@ -93,14 +93,24 @@ library(pROC)
 library(adabag)
 library(gbm)
 library(xgboost)
+library(randomForest)
+library(kernlab)
+library(klaR)
+library(rpart)
+library(rpart.plot)
+
+##################################
+# Defining file paths
+##################################
+DATASETS_ORIGINAL_PATH <- file.path("datasets","original")
 
 ##################################
 # Loading source and
 # formulating the analysis set
 ##################################
-BreastCancer <- read.csv("WisconsinBreastCancer.csv",
-                   na.strings=c("NA","NaN"," ",""),
-                   stringsAsFactors = FALSE)
+BreastCancer <- read.csv(file.path("..", DATASETS_ORIGINAL_PATH, "WisconsinBreastCancer.csv"),
+                         na.strings=c("NA","NaN"," ",""),
+                         stringsAsFactors = FALSE)
 BreastCancer <- as.data.frame(BreastCancer)
 
 ##################################
@@ -115,7 +125,7 @@ summary(BreastCancer)
 # for the response variable
 ##################################
 BreastCancer$diagnosis <- factor(BreastCancer$diagnosis,
-                                 levels = c("M","B"))
+                                 levels = c("B","M"))
 
 ##################################
 # Formulating a data type assessment summary
@@ -989,17 +999,17 @@ dim(MA_Test)
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves mfinal=100, maxdepth=6 and coeflearn=Breiman
-|      **[C.2]** AUROC = 0.96475
+|      **[C.2]** AUROC = 0.97109
 |
 | **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
-|      **[D.1]** <span style="color: #FF0000">compactness_se</span> (numeric)
-|      **[D.2]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
-|      **[D.3]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|      **[D.1]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
 |      **[D.4]** <span style="color: #FF0000">texture_mean</span> (numeric)
-|      **[D.5]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** AUROC = 0.99362
+|      **[E.1]** AUROC = 0.99564
 |
 |
 
@@ -1104,18 +1114,18 @@ MBS_AB_Test_ROC <- roc(response = MBS_AB_Test$MBS_AB_Test_Observed,
 |      **[B.4]** <span style="color: #FF0000">n.minobsinnode</span> = minimum number of observations in the terminal nodes of the trees made to vary across a range of values equal to 5 to 15
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
-|      **[C.1]** Final model configuration involves n.trees=500, interaction.depth=6, shrinkage=0.1 and n.minobsinnode=5
-|      **[C.2]** AUROC = 0.95995
+|      **[C.1]** Final model configuration involves n.trees=500, interaction.depth=5, shrinkage=0.1 and n.minobsinnode=5
+|      **[C.2]** AUROC = 0.96473
 |
 | **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
-|      **[D.1]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
-|      **[D.2]** <span style="color: #FF0000">texture_mean</span> (numeric)
-|      **[D.3]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
-|      **[D.4]** <span style="color: #FF0000">compactness_se</span> (numeric)
-|      **[D.5]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.1]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** AUROC = 0.98256
+|      **[E.1]** AUROC = 0.98306
 |
 |
 
@@ -1214,18 +1224,18 @@ MBS_GBM_Test_ROC <- roc(response = MBS_GBM_Test$MBS_GBM_Test_Observed,
 |      **[B.7]** <span style="color: #FF0000">subsample</span> = subsample ratio of the training instance held constant at a value equal to 1
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
-|      **[C.1]** Final model configuration involves nrounds=500, max_depth=5, eta=0.3, gamma=0.001, colsample_bytree=1, min_child_weight=1 and subsample=1
-|      **[C.2]** AUROC = 0.95898
+|      **[C.1]** Final model configuration involves nrounds=500, max_depth=6, eta=0.3, gamma=0.001, colsample_bytree=1, min_child_weight=1 and subsample=1
+|      **[C.2]** AUROC = 0.96403
 |
 | **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
 |      **[D.1]** <span style="color: #FF0000">texture_mean</span> (numeric)
-|      **[D.2]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
-|      **[D.3]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
-|      **[D.4]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
-|      **[D.5]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** AUROC = 0.98306
+|      **[E.1]** AUROC = 0.98972
 |
 |
 
@@ -1329,17 +1339,17 @@ MBS_XGB_Test_ROC <- roc(response = MBS_XGB_Test$MBS_XGB_Test_Observed,
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves mtry=2
-|      **[C.2]** AUROC = 0.96549
+|      **[C.2]** AUROC = 0.97000
 |
 | **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
-|      **[D.1]** <span style="color: #FF0000">texture_mean</span> (numeric)
-|      **[D.2]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
-|      **[D.3]** <span style="color: #FF0000">texture_worst</span> (numeric)
-|      **[D.4]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.1]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
 |      **[D.5]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** AUROC = 0.99580
+|      **[E.1]** AUROC = 0.99195
 |
 |
 
@@ -1426,7 +1436,7 @@ MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
-|      **[C.2]** AUROC = 0.95790
+|      **[C.2]** AUROC = 0.96444
 |
 | **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
 |      **[D.1]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
@@ -1436,7 +1446,7 @@ MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
 |      **[D.5]** <span style="color: #FF0000">compactness_se</span> (numeric)
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** AUROC = 0.99287
+|      **[E.1]** AUROC = 0.98583
 |
 |
 
@@ -1526,12 +1536,12 @@ MBG_BCART_Test_ROC <- roc(response = MBG_BCART_Test$MBG_BCART_Test_Observed,
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
-|      **[C.2]** AUROC = 0.87369
+|      **[C.2]** AUROC = 0.87628
 |
 | **[D]** The model does not allow for ranking of predictors in terms of variable importance.
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** AUROC = 0.89847
+|      **[E.1]** AUROC = 0.88833
 |
 |
 
@@ -1611,17 +1621,17 @@ BAL_LDA_Test_ROC <- roc(response = BAL_LDA_Test$BAL_LDA_Test_Observed,
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves cp=0.001
-|      **[C.2]** AUROC = 0.88434
+|      **[C.2]** AUROC = 0.86145
 |
 | **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
 |      **[D.1]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
 |      **[D.2]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
-|      **[D.3]** <span style="color: #FF0000">compactness_se</span> (numeric)
-|      **[D.4]** <span style="color: #FF0000">texture_worst</span> (numeric)
-|      **[D.5]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** AUROC = 0.88434
+|      **[E.1]** AUROC = 0.92106
 |
 |
 
@@ -1711,13 +1721,13 @@ BAL_CART_Test_ROC <- roc(response = BAL_CART_Test$BAL_CART_Test_Observed,
 |      **[B.2]** <span style="color: #FF0000">C</span> = cost made to vary across a range of 14 default values
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
-|      **[C.1]** Final model configuration involves sigma=0.21332 and C=32
-|      **[C.2]** AUROC = 0.90950
+|      **[C.1]** Final model configuration involves sigma=0.17905 and C=2048
+|      **[C.2]** AUROC = 0.90977
 |
 | **[D]** The model does not allow for ranking of predictors in terms of variable importance.
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** AUROC = 0.91591
+|      **[E.1]** AUROC = 0.93762
 |
 |
 
@@ -1799,12 +1809,12 @@ BAL_SVM_R_Test_ROC <- roc(response = BAL_SVM_R_Test$BAL_SVM_R_Test_Observed,
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves k=1
-|      **[C.2]** AUROC = 0.89992
+|      **[C.2]** AUROC = 0.90764
 |
 | **[D]** The model does not allow for ranking of predictors in terms of variable importance.
 |
 | **[E]** The independent test model performance of the final model is summarized as follows:
-|      **[E.1]** AUROC = 0.97183
+|      **[E.1]** AUROC = 0.93611
 |
 |
 
@@ -1888,7 +1898,7 @@ BAL_KNN_Test_ROC <- roc(response = BAL_KNN_Test$BAL_KNN_Test_Observed,
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves fL=2, adjust=FALSE and usekernel=FALSE
-|      **[C.2]** AUROC = 0.88642
+|      **[C.2]** AUROC = 0.88735
 |
 | **[D]** The model does not allow for ranking of predictors in terms of variable importance.
 |
@@ -1975,8 +1985,8 @@ BAL_NB_Test_ROC <- roc(response = BAL_NB_Test$BAL_NB_Test_Observed,
 |      **[A.2]** Classification and Regression Trees
 |             **[A.2.1]** <span style="color: #FF0000">cp</span> = 0.001
 |      **[A.3]** Support Vector Machine - Radial Basis Function Kernel 
-|             **[A.3.1]** <span style="color: #FF0000">sigma</span> = 0.21332
-|             **[A.3.2]** <span style="color: #FF0000">C</span> = 32
+|             **[A.3.1]** <span style="color: #FF0000">sigma</span> = 0.17905
+|             **[A.3.2]** <span style="color: #FF0000">C</span> = 2048
 |      **[A.4]** K-Nearest Neighbors 
 |             **[A.4.1]** <span style="color: #FF0000">k</span> = 1
 |      **[A.5]** Naive Bayes 
@@ -1984,11 +1994,7 @@ BAL_NB_Test_ROC <- roc(response = BAL_NB_Test$BAL_NB_Test_Observed,
 |             **[A.5.2]** <span style="color: #FF0000">adjust</span> = FALSE
 |             **[A.5.3]** <span style="color: #FF0000">usekernel</span> = FALSE
 |
-| **[B]** Among pairs of base learners, high correlation was observed between:
-|      **[B.1]** Naive Bayes and Linear Discriminant Analysis = 0.95358
-|      **[B.2]** Naive Bayes and Classification and Regression Trees = 0.61158
-|
-| **[C]** To maintain diversity among the base learners, the Naive Bayes model contributor was removed prior to the model stacking process.
+| **[B]** Among pairs of base learners, no high correlation was observed.
 |
 |
 
@@ -2037,29 +2043,6 @@ splom(BAL_LIST_RESAMPLES)
 ##################################
 (BAL_LIST_COR <- modelCor(resamples(BAL_LIST)))
 
-##################################
-# Re-consolidating the base learners
-# with the removal of LDA accounting
-# for the high correlation with NB
-##################################
-set.seed(12345678)
-BAL_LIST <- caretList(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
-                      y = MA_Train$diagnosis,
-                      trControl=RKFold_Control,
-                      metric="ROC",
-                      tuneList=list(
-                        BAL_LDA=caretModelSpec(method="lda", 
-                                               preProcess=c("center","scale")),
-                        BAL_CART=caretModelSpec(method="rpart", 
-                                                tuneGrid=data.frame(cp=0.001)),
-                        BAL_SVM_R=caretModelSpec(method="svmRadial",
-                                                 preProcess=c("center","scale"),
-                                                 tuneGrid=data.frame(C = 2048, sigma = 0.1790538)),
-                        BAL_KNN=caretModelSpec(method="knn",
-                                               preProcess=c("center","scale"),
-                                               tuneGrid=data.frame(k = 1)))             
-                        )
-
 ```
 
 </details>
@@ -2074,11 +2057,11 @@ BAL_LIST <- caretList(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
-|      **[C.2]** ROC Curve AUC = 0.94722
+|      **[C.2]** ROC Curve AUC = 0.96993
 |
 |
 | **[D]** The independent test model performance of the final model is summarized as follows:
-|      **[D.1]** ROC Curve AUC = 0.98826
+|      **[D.1]** ROC Curve AUC = 0.96613
 |
 |
 
@@ -2106,10 +2089,7 @@ print(MEL_LR)
 ##################################
 MEL_LR_Test <- data.frame(MEL_LR_Test_Observed = MA_Test$diagnosis,
                           MEL_LR_Test_Predicted = predict(MEL_LR,
-                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
-                                                          type = "prob"))
-
-MEL_LR_Test$MEL_LR_Test_Predicted.M <- MEL_LR_Test$MEL_LR_Test_Predicted
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")]))
 
 MEL_LR_Test
 
@@ -2138,10 +2118,10 @@ MEL_LR_Test_ROC <- roc(response = MEL_LR_Test$MEL_LR_Test_Observed,
 |
 | **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
 |      **[C.1]** Final model configuration involves mtry=3
-|      **[C.2]** AUROC = 0.97267
+|      **[C.2]** AUROC = 0.97611
 |
 | **[D]** The independent test model performance of the final model is summarized as follows:
-|      **[D.1]** AUROC = 0.99065
+|      **[D.1]** AUROC = 0.96898
 |
 |
 
@@ -2170,10 +2150,7 @@ print(MEL_RF)
 ##################################
 MEL_RF_Test <- data.frame(MEL_RF_Test_Observed = MA_Test$diagnosis,
                           MEL_RF_Test_Predicted = predict(MEL_RF,
-                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
-                                                          type = "prob"))
-
-MEL_RF_Test$MEL_RF_Test_Predicted.M <- MEL_RF_Test$MEL_RF_Test_Predicted
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")]))
 
 MEL_RF_Test
 
@@ -2182,8 +2159,8 @@ MEL_RF_Test
 # for the test set
 #################################
 MEL_RF_Test_ROC <- roc(response = MEL_RF_Test$MEL_RF_Test_Observed,
-                    predictor = MEL_RF_Test$MEL_RF_Test_Predicted.M,
-                    levels = rev(levels(MEL_RF_Test$MEL_RF_Test_Observed)))
+                       predictor = MEL_RF_Test$MEL_RF_Test_Predicted.M,
+                       levels = rev(levels(MEL_RF_Test$MEL_RF_Test_Observed)))
 
 (MEL_RF_Test_AUROC <- auc(MEL_RF_Test_ROC)[1])
 
@@ -2195,45 +2172,45 @@ MEL_RF_Test_ROC <- roc(response = MEL_RF_Test$MEL_RF_Test_Observed,
 |
 | **[A]** Models which are based on boosting and bagging algorithms demonstrated excellent cross-validated and test AUROC metrics:
 |      **[A.1]** **MBS_AB: Adaptive Boosting** (<mark style="background-color: #CCECFF">**adabag**</mark> package)
-|             **[A.1.1]** Cross-Validation AUROC = 0.96475
-|             **[A.1.2]** Test ROC Curve AUROC = 0.99362 
+|             **[A.1.1]** Cross-Validation AUROC = 0.97109
+|             **[A.1.2]** Test ROC Curve AUROC = 0.99564 
 |      **[A.2]** **MBS_GBM: Stochastic Gradient Boosting** (<mark style="background-color: #CCECFF">**gbm**</mark> package)
-|             **[A.2.1]** Cross-Validation AUROC = 0.95995
-|             **[A.2.2]** Test ROC Curve AUROC = 0.98256 
+|             **[A.2.1]** Cross-Validation AUROC = 0.96473
+|             **[A.2.2]** Test ROC Curve AUROC = 0.98306 
 |      **[A.3]** **MBS_XGB: Extreme Gradient Boosting** (<mark style="background-color: #CCECFF">**xgboost**</mark> package)
-|             **[A.3.1]** Cross-Validation AUROC = 0.95898
-|             **[A.3.2]** Test ROC Curve AUROC = 0.98306
+|             **[A.3.1]** Cross-Validation AUROC = 0.96403
+|             **[A.3.2]** Test ROC Curve AUROC = 0.98977
 |      **[A.4]** **MBG_RF: Random Forest** (<mark style="background-color: #CCECFF">**randomForest**</mark> package)
-|             **[A.4.1]** Cross-Validation AUROC = 0.96549
-|             **[A.4.2]** Test ROC Curve AUROC = 0.99580
+|             **[A.4.1]** Cross-Validation AUROC = 0.97000
+|             **[A.4.2]** Test ROC Curve AUROC = 0.99195
 |      **[A.5]** **MBG_BCART: Bagged Classification and Regression Trees** (<mark style="background-color: #CCECFF">**ipred**</mark>, <mark style="background-color: #CCECFF">**plyr**</mark> and <mark style="background-color: #CCECFF">**e1071**</mark> packages)
-|             **[A.5.1]** Cross-Validation AUROC = 0.95790
-|             **[A.5.2]** Test ROC Curve AUROC = 0.99287
+|             **[A.5.1]** Cross-Validation AUROC = 0.96444
+|             **[A.5.2]** Test ROC Curve AUROC = 0.998583
 |
 | **[B]** Models implemented as base learners which are not based on boosting and bagging algorithms individually demonstrated inferior cross-validated and test AUROC metrics:
 |      **[B.1]** **BAL_LDA: Linear Discriminant Analysis** (<mark style="background-color: #CCECFF">**MASS**</mark> package)
-|             **[B.1.1]** Cross-Validation AUROC = 0.87369
-|             **[B.1.2]** Test ROC Curve AUROC = 0.89847 
+|             **[B.1.1]** Cross-Validation AUROC = 0.87628
+|             **[B.1.2]** Test ROC Curve AUROC = 0.88833 
 |      **[B.2]** **BAL_CART: Classification and Regression Trees** (<mark style="background-color: #CCECFF">**rpart**</mark> package)
-|             **[B.2.1]** Cross-Validation AUROC = 0.86999
-|             **[B.2.2]** Test ROC Curve AUROC = 0.88434 
+|             **[B.2.1]** Cross-Validation AUROC = 0.86145
+|             **[B.2.2]** Test ROC Curve AUROC = 0.92106 
 |      **[B.3]** **BAL_SVM_R: Support Vector Machine - Radial Basis Function Kernel** (<mark style="background-color: #CCECFF">**kernlab**</mark> package)
-|             **[B.3.1]** Cross-Validation AUROC = 0.90950
-|             **[B.3.2]** Test ROC Curve AUROC = 0.91591
+|             **[B.3.1]** Cross-Validation AUROC = 0.90977
+|             **[B.3.2]** Test ROC Curve AUROC = 0.93762
 |      **[B.4]** **BAL_KNN: K-Nearest Neighbors** (<mark style="background-color: #CCECFF">**caret**</mark> package)
-|             **[B.4.1]** Cross-Validation AUROC = 0.89992
-|             **[B.4.2]** Test ROC Curve AUROC = 0.97183
+|             **[B.4.1]** Cross-Validation AUROC = 0.90764
+|             **[B.4.2]** Test ROC Curve AUROC = 0.93611
 |      **[B.5]** **BAL_NB: Naive Bayes** (<mark style="background-color: #CCECFF">**klaR**</mark> package)
-|             **[B.5.1]** Cross-Validation AUROC = 0.88642
-|             **[B.5.2]** Test ROC Curve AUROC = 0.90383
+|             **[B.5.1]** Cross-Validation AUROC = 0.88735
+|             **[B.5.2]** Test ROC Curve AUROC = 0.89696
 |
 | **[C]** The model stacking process demonstrated improved cross-validated and test AUROC metrics as compared to individual base learners:
 |      **[C.1]** **MEL_LR: Logistic Regression** (<mark style="background-color: #CCECFF">**stats**</mark> package)
-|             **[C.1.1]** Cross-Validation AUROC = 0.94722
-|             **[C.1.2]** Test ROC Curve AUROC = 0.98826 
+|             **[C.1.1]** Cross-Validation AUROC = 0.96993
+|             **[C.1.2]** Test ROC Curve AUROC = 0.96613
 |      **[C.2]** **MEL_RF: Classification and Regression Trees** (<mark style="background-color: #CCECFF">**randomForest**</mark> package)
-|             **[C.2.1]** Cross-Validation AUROC = 0.97267
-|             **[C.2.2]** Test ROC Curve AUROC = 0.99065
+|             **[C.2.1]** Cross-Validation AUROC = 0.97611
+|             **[C.2.2]** Test ROC Curve AUROC = 0.96898
 |
 |
 
@@ -2322,7 +2299,7 @@ print(AUROC_Summary, row.names=FALSE)
                            main = "Classification Model Performance Comparison",
                            ylab = "Model",
                            xlab = "AUROC",
-                           auto.key = list(adj = 1),
+                           auto.key = list(adj=1, space="top", columns=2),
                            type=c("p", "h"),
                            origin = 0,
                            alpha = 0.45,
@@ -2336,7 +2313,7 @@ print(AUROC_Summary, row.names=FALSE)
 |
 # **2. Summary** <a name="summary"></a>
 |
-| ![](D:/Github_Codes/ProjectPortfolio/Portfolio_Project_38/docs/Project38_Summary.png)
+| ![](D:/Github_Codes/ProjectPortfolio/Portfolio_Project_38/images/Project38_Summary.png)
 |
 # **3. References**
 |
@@ -2362,17 +2339,21 @@ print(AUROC_Summary, row.names=FALSE)
 | **[R Package]** [corrplot](https://cran.r-project.org/web/packages/corrplot/corrplot.pdf) by Taiyun Wei
 | **[R Package]** [tidyverse](https://cran.r-project.org/web/packages/tidyverse/tidyverse.pdf) by Hadley Wickham
 | **[R Package]** [lares](https://cran.rstudio.com/web/packages/lares/lares.pdf) by Bernardo Lares
-| **[R Package]** [DMwR](https://mran.microsoft.com/snapshot/2016-05-02/web/packages/DMwR/DMwR.pdf) by Luis Torgo
+| **[R Package]** [DMwR2](https://mran.microsoft.com/snapshot/2016-05-02/web/packages/DMwR/DMwR.pdf) by Luis Torgo
 | **[R Package]** [gridExtra](https://cran.r-project.org/web/packages/gridExtra/gridExtra.pdf) by Baptiste Auguie and Anton Antonov
 | **[R Package]** [rattle](https://cran.r-project.org/web/packages/rattle/rattle.pdf) by Graham Williams
 | **[R Package]** [RColorBrewer](https://cran.r-project.org/web//packages/RColorBrewer/RColorBrewer.pdf) by Erich Neuwirth
 | **[R Package]** [stats](https://search.r-project.org/R/refmans/stats/html/00Index.html) by R Core Team
-
 | **[R Package]** [caretEnsemble](https://cran.r-project.org/web/packages/caretEnsemble/caretEnsemble.pdf) by Zachary Deane-Mayer
 | **[R Package]** [pROC](https://cran.r-project.org/web/packages/pROC/pROC.pdf) by Xavier Robin
 | **[R Package]** [adabag](https://cran.r-project.org/web/packages/adabag/adabag.pdf) by Esteban Alfaro, Matias Gamez and Noelia Garcia
 | **[R Package]** [gbm](https://cran.r-project.org/web/packages/gbm/gbm.pdf) by Brandon Greenwell, Bradley Boehmke and Jay Cunningham 
 | **[R Package]** [xgboost](https://cran.r-project.org/web/packages/xgboost/xgboost.pdf) by Jiaming Yuan
+| **[R Package]** [randomForest](https://cran.r-project.org/web/packages/randomForest/randomForest.pdf) by Andy Liaw
+| **[R Package]** [kernlab](https://cran.r-project.org/web/packages/kernlab/kernlab.pdf) by Alexandros Karatzoglou
+| **[R Package]** [klaR](https://cran.r-project.org/web/packages/klaR/klaR.pdf) by Christian Roever, Nils Raabe, Karsten Luebke, Uwe Ligges, Gero Szepannek, Marc Zentgraf and David Meyer
+| **[R Package]** [rpart](https://mran.microsoft.com/web/packages/rpart/rpart.pdf) by Terry Therneau and Beth Atkinson
+| **[R Package]** [rpart.plot](https://cran.r-project.org/web/packages/rpart.plot/rpart.plot.pdf) by Stephen Milborrow
 | **[Article]** [A Brief Introduction to caretEnsemble](https://cran.r-project.org/web/packages/caretEnsemble/vignettes/caretEnsemble-intro.html) by Zachary Deane-Mayer
 | **[Article]** [A Gentle Introduction to Ensemble Learning Algorithms](https://machinelearningmastery.com/tour-of-ensemble-learning-algorithms/) by Jason Brownlee
 | **[Article]** [Ensemble Methods: Elegant Techniques to Produce Improved Machine Learning Results](https://www.toptal.com/machine-learning/ensemble-methods-machine-learning) by Necati Demir

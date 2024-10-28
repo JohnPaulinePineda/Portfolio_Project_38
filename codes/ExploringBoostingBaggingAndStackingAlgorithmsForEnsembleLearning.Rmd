@@ -1,0 +1,2392 @@
+---
+title: 'Supervised Learning : Exploring Boosting, Bagging and Stacking Algorithms for Ensemble Learning'
+author: "<b><a href='https://github.com/JohnPaulinePineda'>John Pauline Pineda</a></b>"
+date: "August 22, 2023"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    theme: readable
+    highlight: tango
+    css: doc.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.height=10)
+```
+
+# **1. Table of Contents**
+|
+| This project explores different ensemble learning approaches which combine the predictions from multiple models in an effort to achieve better predictive performance using various helpful packages in <mark style="background-color: #CCECFF">**R**</mark>. The ensemble frameworks applied in the analysis were grouped into three classes including boosting models which add ensemble members sequentially that correct the predictions made by prior models and outputs a weighted average of the predictions; bagging models which fit many decision trees on different samples of the same dataset and averaging the predictions; and stacking which consolidate many different models types on the same data and using another model to learn how to best combine the predictions. Boosting models included the **Adaptive Boosting**, **Stochastic Gradient Boosting** and **Extreme Gradient Boosting** algorithms. Bagging models applied were the **Random Forest** and **Bagged Classification and Regression Trees** algorithms. Individual base learners including the **Linear Discriminant Analysis**, **Classification and Regression Trees**, **Support Vector Machine (Radial Basis Function Kernel)**, **K-Nearest Neighbors** and **Naive Bayes** algorithms were evaluated for correlation and stacked together as contributors to the **Logistic Regression** and **Random Forest** meta-models. The resulting predictions derived from all ensemble learning models were evaluated based on their discrimination power using the area under the receiver operating characteristic curve (AUROC) metric. All results were consolidated in a [<span style="color: #FF0000">**Summary**</span>](#summary) presented at the end of the document.
+|
+| Ensemble learning aims to improve predictive performance by reaching a consensus in predictions through the fusion of the salient properties of two or more models. The final ensemble learning framework is more robust than the individual members that constitute the ensemble because of the variance reduction in the prediction errors. The algorithms applied in this study (mostly contained in the <mark style="background-color: #CCECFF">**caret**</mark> and <mark style="background-color: #CCECFF">**caretEnsemble**</mark> packages) attempt to capture complementary information from similar or diverse learners, as applicable, to further advance prediction accuracy over that of any of the contributing models. 
+|
+##  1.1 Sample Data
+|
+| The [<mark style="background-color: #EEEEEE;color: #FF0000">**Wisconsin Breast Cancer**</mark>](https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data) dataset shared from the [<mark style="background-color: #CCECFF">**Kaggle**</mark>](https://www.kaggle.com/) website as obtained from the [UCI Machine Learning Repository](https://archive.ics.uci.edu/) was used for this illustrated example.   
+|
+| Preliminary dataset assessment:
+|
+| **[A]** 1138 rows (observations)
+| 
+| **[B]** 32 columns (variables)
+|      **[B.1]** 1/32 metadata (unique identifiers) = <span style="color: #FF0000">id</span> (numeric)
+|      **[B.2]** 1/32 response = <span style="color: #FF0000">diagnosis</span> (factor)
+|      **[B.3]** 30/32 predictors = 30/30 numeric
+|             **[B.3.1]** <span style="color: #FF0000">radius_mean</span> (numeric)
+|             **[B.3.2]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|             **[B.3.3]** <span style="color: #FF0000">perimeter_mean</span> (numeric)
+|             **[B.3.4]** <span style="color: #FF0000">area_mean</span> (numeric)
+|             **[B.3.5]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|             **[B.3.6]** <span style="color: #FF0000">compactness_mean</span> (numeric)
+|             **[B.3.7]** <span style="color: #FF0000">concavity_mean</span> (numeric)
+|             **[B.3.8]** <span style="color: #FF0000">concave.points_mean</span> (numeric)
+|             **[B.3.9]** <span style="color: #FF0000">symmetry_mean</span> (numeric)
+|             **[B.3.10]** <span style="color: #FF0000">fractal_dimension_mean</span> (numeric)
+|             **[B.3.11]** <span style="color: #FF0000">radius_se</span> (numeric)
+|             **[B.3.12]** <span style="color: #FF0000">texture_se</span> (numeric)
+|             **[B.3.13]** <span style="color: #FF0000">perimeter_se</span> (numeric)
+|             **[B.3.14]** <span style="color: #FF0000">area_se</span> (numeric)
+|             **[B.3.15]** <span style="color: #FF0000">smoothness_se</span> (numeric)
+|             **[B.3.16]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|             **[B.3.17]** <span style="color: #FF0000">concavity_se</span> (numeric)
+|             **[B.3.18]** <span style="color: #FF0000">concave.points_se</span> (numeric)
+|             **[B.3.19]** <span style="color: #FF0000">symmetry_se</span> (numeric)
+|             **[B.3.20]** <span style="color: #FF0000">fractal_dimension_se</span> (numeric)
+|             **[B.3.21]** <span style="color: #FF0000">radius_worst</span> (numeric)
+|             **[B.3.22]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|             **[B.3.23]** <span style="color: #FF0000">perimeter_worst</span> (numeric)
+|             **[B.3.24]** <span style="color: #FF0000">area_worst</span> (numeric)
+|             **[B.3.25]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|             **[B.3.26]** <span style="color: #FF0000">compactness_worst</span> (numeric)
+|             **[B.3.27]** <span style="color: #FF0000">concavity_worst</span> (numeric)
+|             **[B.3.28]** <span style="color: #FF0000">concave.points_worst</span> (numeric)
+|             **[B.3.29]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|             **[B.3.30]** <span style="color: #FF0000">fractal_dimension_worst</span> (numeric)
+|
+| 
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.1, warning=FALSE, message=FALSE}
+##################################
+# Loading R libraries
+##################################
+library(AppliedPredictiveModeling)
+library(tidyr)
+library(caret)
+library(lattice)
+library(dplyr)
+library(moments)
+library(skimr)
+library(RANN)
+library(pls)
+library(corrplot)
+library(lares)
+library(DMwR2)
+library(gridExtra)
+library(rattle)
+library(RColorBrewer)
+library(stats)
+library(caretEnsemble)
+library(pROC)
+library(adabag)
+library(gbm)
+library(xgboost)
+library(randomForest)
+library(kernlab)
+library(klaR)
+library(rpart)
+library(rpart.plot)
+
+##################################
+# Defining file paths
+##################################
+DATASETS_ORIGINAL_PATH <- file.path("datasets","original")
+
+##################################
+# Loading source and
+# formulating the analysis set
+##################################
+BreastCancer <- read.csv(file.path("..", DATASETS_ORIGINAL_PATH, "WisconsinBreastCancer.csv"),
+                         na.strings=c("NA","NaN"," ",""),
+                         stringsAsFactors = FALSE)
+BreastCancer <- as.data.frame(BreastCancer)
+
+##################################
+# Performing a general exploration of the data set
+##################################
+dim(BreastCancer)
+str(BreastCancer)
+summary(BreastCancer)
+
+##################################
+# Setting the data type
+# for the response variable
+##################################
+BreastCancer$diagnosis <- factor(BreastCancer$diagnosis,
+                                 levels = c("B","M"))
+
+##################################
+# Formulating a data type assessment summary
+##################################
+PDA <- BreastCancer
+(PDA.Summary <- data.frame(
+  Column.Index=c(1:length(names(PDA))),
+  Column.Name= names(PDA), 
+  Column.Type=sapply(PDA, function(x) class(x)), 
+  row.names=NULL)
+)
+
+```
+
+</details>
+
+##  1.2 Data Quality Assessment
+|
+| **[A]** No missing observations noted for any predictor.
+|
+| **[B]** Low variance observed for 1 predictor with First.Second.Mode.Ratio>5.
+|      **[B.1]** <span style="color: #FF0000">concavity_se</span> = 6.50
+|
+| **[C]** No low variance observed for any predictor with Unique.Count.Ratio<0.01.
+|
+| **[D]** High skewness observed for 5 predictors with Skewness>3 or Skewness<(-3).
+|      **[D.1]** <span style="color: #FF0000">radius_se</span> = +3.08
+|      **[D.2]** <span style="color: #FF0000">perimeter_se</span> = +3.43
+|      **[D.3]** <span style="color: #FF0000">area_se</span> = +5.43
+|      **[D.4]** <span style="color: #FF0000">concavity_se</span> = +5.10
+|      **[D.5]** <span style="color: #FF0000">fractal_dimension_se</span> = +3.91
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.2, warning=FALSE, message=FALSE}
+##################################
+# Loading dataset
+##################################
+DQA <- BreastCancer
+
+##################################
+# Formulating an overall data quality assessment summary
+##################################
+(DQA.Summary <- data.frame(
+  Column.Name= names(DQA),
+  Column.Type=sapply(DQA, function(x) class(x)),
+  Row.Count=sapply(DQA, function(x) nrow(DQA)),
+  NA.Count=sapply(DQA,function(x)sum(is.na(x))),
+  Fill.Rate=sapply(DQA,function(x)format(round((sum(!is.na(x))/nrow(DQA)),3),nsmall=3)),
+  row.names=NULL)
+)
+
+##################################
+# Listing all Predictors
+##################################
+DQA.Predictors <- DQA[,!names(DQA) %in% c("id","diagnosis")]
+
+##################################
+# Listing all numeric Predictors
+##################################
+DQA.Predictors.Numeric <- DQA.Predictors[,sapply(DQA.Predictors, is.numeric)]
+
+if (length(names(DQA.Predictors.Numeric))>0) {
+    print(paste0("There are ",
+               (length(names(DQA.Predictors.Numeric))),
+               " numeric predictor variable(s)."))
+} else {
+  print("There are no numeric predictor variables.")
+}
+
+##################################
+# Listing all factor Predictors
+##################################
+DQA.Predictors.Factor <- DQA.Predictors[,sapply(DQA.Predictors, is.factor)]
+
+if (length(names(DQA.Predictors.Factor))>0) {
+    print(paste0("There are ",
+               (length(names(DQA.Predictors.Factor))),
+               " factor predictor variable(s)."))
+} else {
+  print("There are no factor predictor variables.")
+}
+
+##################################
+# Formulating a data quality assessment summary for factor Predictors
+##################################
+if (length(names(DQA.Predictors.Factor))>0) {
+
+  ##################################
+  # Formulating a function to determine the first mode
+  ##################################
+  FirstModes <- function(x) {
+    ux <- unique(na.omit(x))
+    tab <- tabulate(match(x, ux))
+    ux[tab == max(tab)]
+  }
+
+  ##################################
+  # Formulating a function to determine the second mode
+  ##################################
+  SecondModes <- function(x) {
+    ux <- unique(na.omit(x))
+    tab <- tabulate(match(x, ux))
+    fm = ux[tab == max(tab)]
+    sm = x[!(x %in% fm)]
+    usm <- unique(sm)
+    tabsm <- tabulate(match(sm, usm))
+    ifelse(is.na(usm[tabsm == max(tabsm)])==TRUE,
+           return("x"),
+           return(usm[tabsm == max(tabsm)]))
+  }
+
+  (DQA.Predictors.Factor.Summary <- data.frame(
+  Column.Name= names(DQA.Predictors.Factor),
+  Column.Type=sapply(DQA.Predictors.Factor, function(x) class(x)),
+  Unique.Count=sapply(DQA.Predictors.Factor, function(x) length(unique(x))),
+  First.Mode.Value=sapply(DQA.Predictors.Factor, function(x) as.character(FirstModes(x)[1])),
+  Second.Mode.Value=sapply(DQA.Predictors.Factor, function(x) as.character(SecondModes(x)[1])),
+  First.Mode.Count=sapply(DQA.Predictors.Factor, function(x) sum(na.omit(x) == FirstModes(x)[1])),
+  Second.Mode.Count=sapply(DQA.Predictors.Factor, function(x) sum(na.omit(x) == SecondModes(x)[1])),
+  Unique.Count.Ratio=sapply(DQA.Predictors.Factor, function(x) format(round((length(unique(x))/nrow(DQA.Predictors.Factor)),3), nsmall=3)),
+  First.Second.Mode.Ratio=sapply(DQA.Predictors.Factor, function(x) format(round((sum(na.omit(x) == FirstModes(x)[1])/sum(na.omit(x) == SecondModes(x)[1])),3), nsmall=3)),
+  row.names=NULL)
+  )
+
+}
+
+##################################
+# Formulating a data quality assessment summary for numeric Predictors
+##################################
+if (length(names(DQA.Predictors.Numeric))>0) {
+
+  ##################################
+  # Formulating a function to determine the first mode
+  ##################################
+  FirstModes <- function(x) {
+    ux <- unique(na.omit(x))
+    tab <- tabulate(match(x, ux))
+    ux[tab == max(tab)]
+  }
+
+  ##################################
+  # Formulating a function to determine the second mode
+  ##################################
+  SecondModes <- function(x) {
+    ux <- unique(na.omit(x))
+    tab <- tabulate(match(x, ux))
+    fm = ux[tab == max(tab)]
+    sm = na.omit(x)[!(na.omit(x) %in% fm)]
+    usm <- unique(sm)
+    tabsm <- tabulate(match(sm, usm))
+    ifelse(is.na(usm[tabsm == max(tabsm)])==TRUE,
+           return(0.00001),
+           return(usm[tabsm == max(tabsm)]))
+  }
+
+  (DQA.Predictors.Numeric.Summary <- data.frame(
+  Column.Name= names(DQA.Predictors.Numeric),
+  Column.Type=sapply(DQA.Predictors.Numeric, function(x) class(x)),
+  Unique.Count=sapply(DQA.Predictors.Numeric, function(x) length(unique(x))),
+  Unique.Count.Ratio=sapply(DQA.Predictors.Numeric, function(x) format(round((length(unique(x))/nrow(DQA.Predictors.Numeric)),3), nsmall=3)),
+  First.Mode.Value=sapply(DQA.Predictors.Numeric, function(x) format(round((FirstModes(x)[1]),3),nsmall=3)),
+  Second.Mode.Value=sapply(DQA.Predictors.Numeric, function(x) format(round((SecondModes(x)[1]),3),nsmall=3)),
+  First.Mode.Count=sapply(DQA.Predictors.Numeric, function(x) sum(na.omit(x) == FirstModes(x)[1])),
+  Second.Mode.Count=sapply(DQA.Predictors.Numeric, function(x) sum(na.omit(x) == SecondModes(x)[1])),
+  First.Second.Mode.Ratio=sapply(DQA.Predictors.Numeric, function(x) format(round((sum(na.omit(x) == FirstModes(x)[1])/sum(na.omit(x) == SecondModes(x)[1])),3), nsmall=3)),
+  Minimum=sapply(DQA.Predictors.Numeric, function(x) format(round(min(x,na.rm = TRUE),3), nsmall=3)),
+  Mean=sapply(DQA.Predictors.Numeric, function(x) format(round(mean(x,na.rm = TRUE),3), nsmall=3)),
+  Median=sapply(DQA.Predictors.Numeric, function(x) format(round(median(x,na.rm = TRUE),3), nsmall=3)),
+  Maximum=sapply(DQA.Predictors.Numeric, function(x) format(round(max(x,na.rm = TRUE),3), nsmall=3)),
+  Skewness=sapply(DQA.Predictors.Numeric, function(x) format(round(skewness(x,na.rm = TRUE),3), nsmall=3)),
+  Kurtosis=sapply(DQA.Predictors.Numeric, function(x) format(round(kurtosis(x,na.rm = TRUE),3), nsmall=3)),
+  Percentile25th=sapply(DQA.Predictors.Numeric, function(x) format(round(quantile(x,probs=0.25,na.rm = TRUE),3), nsmall=3)),
+  Percentile75th=sapply(DQA.Predictors.Numeric, function(x) format(round(quantile(x,probs=0.75,na.rm = TRUE),3), nsmall=3)),
+  row.names=NULL)
+  )
+
+}
+
+##################################
+# Identifying potential data quality issues
+##################################
+
+##################################
+# Checking for missing observations
+##################################
+if ((nrow(DQA.Summary[DQA.Summary$NA.Count>0,]))>0){
+  print(paste0("Missing observations noted for ",
+               (nrow(DQA.Summary[DQA.Summary$NA.Count>0,])),
+               " variable(s) with NA.Count>0 and Fill.Rate<1.0."))
+  DQA.Summary[DQA.Summary$NA.Count>0,]
+} else {
+  print("No missing observations noted.")
+}
+
+##################################
+# Checking for zero or near-zero variance Predictors
+##################################
+if (length(names(DQA.Predictors.Factor))==0) {
+  print("No factor predictors noted.")
+} else if (nrow(DQA.Predictors.Factor.Summary[as.numeric(as.character(DQA.Predictors.Factor.Summary$First.Second.Mode.Ratio))>5,])>0){
+  print(paste0("Low variance observed for ",
+               (nrow(DQA.Predictors.Factor.Summary[as.numeric(as.character(DQA.Predictors.Factor.Summary$First.Second.Mode.Ratio))>5,])),
+               " factor variable(s) with First.Second.Mode.Ratio>5."))
+  DQA.Predictors.Factor.Summary[as.numeric(as.character(DQA.Predictors.Factor.Summary$First.Second.Mode.Ratio))>5,]
+} else {
+  print("No low variance factor predictors due to high first-second mode ratio noted.")
+}
+
+if (length(names(DQA.Predictors.Numeric))==0) {
+  print("No numeric predictors noted.")
+} else if (nrow(DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$First.Second.Mode.Ratio))>5,])>0){
+  print(paste0("Low variance observed for ",
+               (nrow(DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$First.Second.Mode.Ratio))>5,])),
+               " numeric variable(s) with First.Second.Mode.Ratio>5."))
+  DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$First.Second.Mode.Ratio))>5,]
+} else {
+  print("No low variance numeric predictors due to high first-second mode ratio noted.")
+}
+
+if (length(names(DQA.Predictors.Numeric))==0) {
+  print("No numeric predictors noted.")
+} else if (nrow(DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$Unique.Count.Ratio))<0.01,])>0){
+  print(paste0("Low variance observed for ",
+               (nrow(DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$Unique.Count.Ratio))<0.01,])),
+               " numeric variable(s) with Unique.Count.Ratio<0.01."))
+  DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$Unique.Count.Ratio))<0.01,]
+} else {
+  print("No low variance numeric predictors due to low unique count ratio noted.")
+}
+
+##################################
+# Checking for skewed Predictors
+##################################
+if (length(names(DQA.Predictors.Numeric))==0) {
+  print("No numeric predictors noted.")
+} else if (nrow(DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$Skewness))>3 |
+                                               as.numeric(as.character(DQA.Predictors.Numeric.Summary$Skewness))<(-3),])>0){
+  print(paste0("High skewness observed for ",
+  (nrow(DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$Skewness))>3 |
+                                               as.numeric(as.character(DQA.Predictors.Numeric.Summary$Skewness))<(-3),])),
+  " numeric variable(s) with Skewness>3 or Skewness<(-3)."))
+  DQA.Predictors.Numeric.Summary[as.numeric(as.character(DQA.Predictors.Numeric.Summary$Skewness))>3 |
+                                 as.numeric(as.character(DQA.Predictors.Numeric.Summary$Skewness))<(-3),]
+} else {
+  print("No skewed numeric predictors noted.")
+}
+
+```
+
+</details>
+
+##  1.3 Data Preprocessing
+
+###  1.3.1 Outlier Detection
+|
+| **[A]** Outliers noted for 29 out of the 30 predictors. Predictor values were visualized through a boxplot including observations classified as suspected outliers using the IQR criterion. The IQR criterion means that all observations above the (75th percentile + 1.5 x IQR) or below the (25th percentile - 1.5 x IQR) are suspected outliers, where IQR is the difference between the third quartile (75th percentile) and first quartile (25th percentile).
+|      **[A.1]** <span style="color: #FF0000">radius_mean</span> = 28
+|      **[A.2]** <span style="color: #FF0000">texture_mean</span> = 14
+|      **[A.3]** <span style="color: #FF0000">perimeter_mean</span> = 26
+|      **[A.4]** <span style="color: #FF0000">area_mean</span> = 50
+|      **[A.5]** <span style="color: #FF0000">smoothness_mean</span> = 12
+|      **[A.6]** <span style="color: #FF0000">compactness_mean</span> = 32
+|      **[A.7]** <span style="color: #FF0000">concavity_mean</span> = 36
+|      **[A.8]** <span style="color: #FF0000">concave.points_mean</span> = 20
+|      **[A.9]** <span style="color: #FF0000">symmetry_mean</span> = 30
+|      **[A.10]** <span style="color: #FF0000">fractal_dimension_mean</span> = 30
+|      **[A.11]** <span style="color: #FF0000">radius_se</span> = 76
+|      **[A.12]** <span style="color: #FF0000">texture_se</span> = 40
+|      **[A.13]** <span style="color: #FF0000">perimeter_se</span> = 76
+|      **[A.14]** <span style="color: #FF0000">area_se</span> = 130
+|      **[A.15]** <span style="color: #FF0000">smoothness_se</span> = 60
+|      **[A.16]** <span style="color: #FF0000">compactness_se</span> = 56
+|      **[A.17]** <span style="color: #FF0000">concavity_se</span> = 44
+|      **[A.18]** <span style="color: #FF0000">concave.points_se</span> = 38
+|      **[A.19]** <span style="color: #FF0000">symmetry_se</span> = 54
+|      **[A.20]** <span style="color: #FF0000">fractal_dimension_se</span> = 56
+|      **[A.21]** <span style="color: #FF0000">radius_worst</span> = 34
+|      **[A.22]** <span style="color: #FF0000">texture_worst</span> = 10
+|      **[A.23]** <span style="color: #FF0000">perimeter_worst</span> = 30
+|      **[A.24]** <span style="color: #FF0000">area_worst</span> = 70
+|      **[A.25]** <span style="color: #FF0000">smoothness_worst</span> = 14
+|      **[A.26]** <span style="color: #FF0000">compactness_worst</span> = 32
+|      **[A.27]** <span style="color: #FF0000">concavity_worst</span> = 24
+|      **[A.28]** <span style="color: #FF0000">symmetry_worst</span> = 46
+|      **[A.29]** <span style="color: #FF0000">fractal_dimension_worst</span> = 48
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.3.1.1, warning=FALSE, message=FALSE}
+##################################
+# Loading dataset
+##################################
+DPA <- DQA[,!names(DQA) %in% c("id")]
+
+##################################
+# Gathering descriptive statistics
+##################################
+(DPA_Skimmed <- skim(DPA)) 
+
+```
+
+```{r section_1.3.1.2, warning=FALSE, message=FALSE, fig.width=15, fig.height=2}
+
+##################################
+# Outlier Detection
+##################################
+
+##################################
+# Listing all Predictors
+##################################
+DPA.Predictors <- DPA[,!names(DPA) %in% c("diagnosis")]
+
+##################################
+# Listing all numeric Predictors
+##################################
+DPA.Predictors.Numeric <- DPA.Predictors[,sapply(DPA.Predictors, is.numeric)]
+
+##################################
+# Identifying outliers for the numeric Predictors
+##################################
+OutlierCountList <- c()
+
+for (i in 1:ncol(DPA.Predictors.Numeric)) {
+  Outliers <- boxplot.stats(DPA.Predictors.Numeric[,i])$out
+  OutlierCount <- length(Outliers)
+  OutlierCountList <- append(OutlierCountList,OutlierCount)
+  OutlierIndices <- which(DPA.Predictors.Numeric[,i] %in% c(Outliers))
+  print(
+  ggplot(DPA.Predictors.Numeric, aes(x=DPA.Predictors.Numeric[,i])) +
+  geom_boxplot() +
+  theme_bw() +
+  theme(axis.text.y=element_blank(), 
+        axis.ticks.y=element_blank()) +
+  xlab(names(DPA.Predictors.Numeric)[i]) +
+  labs(title=names(DPA.Predictors.Numeric)[i],
+       subtitle=paste0(OutlierCount, " Outlier(s) Detected")))
+}
+
+```
+
+</details>
+
+###  1.3.2 Zero and Near-Zero Variance
+|
+| **[A]** No low variance observed for any predictor using a preprocessing summary from the <mark style="background-color: #CCECFF">**caret**</mark> package. The <span style="color: #0000FF">nearZeroVar</span> method using both the <span style="color: #0000FF">freqCut</span> and <span style="color: #0000FF">uniqueCut</span> criteria set at 95/5 and 10, respectively, were applied on the dataset.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.3.2, warning=FALSE, message=FALSE}
+
+##################################
+# Zero and Near-Zero Variance
+##################################
+
+##################################
+# Identifying columns with low variance
+###################################
+DPA_LowVariance <- nearZeroVar(DPA,
+                               freqCut = 80/20,
+                               uniqueCut = 10,
+                               saveMetrics= TRUE)
+(DPA_LowVariance[DPA_LowVariance$nzv,])
+
+if ((nrow(DPA_LowVariance[DPA_LowVariance$nzv,]))==0){
+  
+  print("No low variance descriptors noted.")
+  
+} else {
+
+  print(paste0("Low variance observed for ",
+               (nrow(DPA_LowVariance[DPA_LowVariance$nzv,])),
+               " numeric variable(s) with First.Second.Mode.Ratio>4 and Unique.Count.Ratio<0.10."))
+  
+  DPA_LowVarianceForRemoval <- (nrow(DPA_LowVariance[DPA_LowVariance$nzv,]))
+  
+  print(paste0("Low variance can be resolved by removing ",
+               (nrow(DPA_LowVariance[DPA_LowVariance$nzv,])),
+               " numeric variable(s)."))
+  
+  for (j in 1:DPA_LowVarianceForRemoval) {
+  DPA_LowVarianceRemovedVariable <- rownames(DPA_LowVariance[DPA_LowVariance$nzv,])[j]
+  print(paste0("Variable ",
+               j,
+               " for removal: ",
+               DPA_LowVarianceRemovedVariable))
+  }
+  
+  DPA %>%
+  skim() %>%
+  dplyr::filter(skim_variable %in% rownames(DPA_LowVariance[DPA_LowVariance$nzv,]))
+
+}
+
+```
+
+</details>
+
+###  1.3.3 Collinearity
+|
+| **[A]** High correlation values were noted for 15 pairs of numeric predictors with Pearson correlation coefficients >80% as confirmed using the preprocessing summaries from the <mark style="background-color: #CCECFF">**caret**</mark> package.
+|      **[A.1]** <span style="color: #FF0000">radius_mean</span> and <span style="color: #FF0000">perimeter_mean</span>  = +100%
+|      **[A.2]** <span style="color: #FF0000">radius_worst</span> and <span style="color: #FF0000">perimeter_worst</span>  = +99%
+|      **[A.3]** <span style="color: #FF0000">radius_mean</span> and <span style="color: #FF0000">area_mean</span>  = +99%
+|      **[A.4]** <span style="color: #FF0000">perimeter_mean</span> and <span style="color: #FF0000">area_mean</span>  = +99%
+|      **[A.5]** <span style="color: #FF0000">radius_worst</span> and <span style="color: #FF0000">area_worst</span>  = +98%
+|      **[A.6]** <span style="color: #FF0000">perimeter_worst</span> and <span style="color: #FF0000">area_worst</span>  = +98%
+|      **[A.7]** <span style="color: #FF0000">radius_se</span> and <span style="color: #FF0000">perimeter_se</span>  = +97%
+|      **[A.8]** <span style="color: #FF0000">perimeter_mean</span> and <span style="color: #FF0000">perimeter_worst</span>  = +97%
+|      **[A.9]** <span style="color: #FF0000">radius_mean</span> and <span style="color: #FF0000">radius_worst</span>  = +97%
+|      **[A.10]** <span style="color: #FF0000">perimeter_mean</span> and <span style="color: #FF0000">radius_worst</span>  = +97%%
+|      **[A.11]** <span style="color: #FF0000">radius_mean</span> and <span style="color: #FF0000">perimeter_worst</span>  = +96%
+|      **[A.12]** <span style="color: #FF0000">area_mean</span> and <span style="color: #FF0000">radius_worst</span>  = +96%
+|      **[A.13]** <span style="color: #FF0000">area_mean</span> and <span style="color: #FF0000">area_worst</span>  = +96%
+|      **[A.14]** <span style="color: #FF0000">area_mean</span> and <span style="color: #FF0000">perimeter_worst</span>  = +96%
+|      **[A.15]** <span style="color: #FF0000">radius_se</span> and <span style="color: #FF0000">area_se</span>  = +95%
+|
+| **[B]** 7 predictors driving high pairwise correlation were recommended for removal using the <span style="color: #0000FF">findCorrelation</span> preprocessing method from the <mark style="background-color: #CCECFF">**caret**</mark> package. The function looks at the mean absolute correlation of each predictor and removes that with the largest mean absolute correlation.
+|      **[B.1]** <span style="color: #FF0000">perimeter_worst</span>
+|      **[B.2]** <span style="color: #FF0000">radius_worst</span>
+|      **[B.3]** <span style="color: #FF0000">perimeter_mean</span>
+|      **[B.4]** <span style="color: #FF0000">area_worst</span>
+|      **[B.5]** <span style="color: #FF0000">radius_mean</span>
+|      **[B.6]** <span style="color: #FF0000">perimeter_se</span>
+|      **[B.7]** <span style="color: #FF0000">area_se</span>
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.3.3, warning=FALSE, message=FALSE}
+
+##################################
+# Visualizing pairwise correlation between Predictor
+##################################
+(DPA_Correlation <- cor(DPA.Predictors.Numeric,
+                        method = "pearson",
+                        use="pairwise.complete.obs"))
+
+DPA_CorrelationTest <- cor.mtest(DPA.Predictors.Numeric,
+                       method = "pearson",
+                       conf.level = 0.95)
+
+corrplot(cor(DPA.Predictors.Numeric,
+             method = "pearson",
+             use="pairwise.complete.obs"),
+             method = "circle",
+             type = "upper",
+             order = "original",
+             tl.col = "black",
+             tl.cex = 0.75,
+             tl.srt = 90,
+             sig.level = 0.05,
+             p.mat = DPA_CorrelationTest$p,
+             insig = "blank")
+
+corrplot(cor(DPA.Predictors.Numeric,
+             method = "pearson",
+             use="pairwise.complete.obs"),
+             method = "number",
+             type = "upper",
+             order = "original",
+             tl.col = "black",
+             tl.cex = 0.75,
+             tl.srt = 90,
+             sig.level = 0.05,
+             number.cex = 0.65,
+             p.mat = DPA_CorrelationTest$p,
+             insig = "blank")
+
+##################################
+# Identifying the highly correlated variables
+##################################
+(DPA_HighlyCorrelatedCount <- sum(abs(DPA_Correlation[upper.tri(DPA_Correlation)])>0.95))
+
+if (DPA_HighlyCorrelatedCount == 0) {
+  print("No highly correlated predictors noted.")
+} else {
+  print(paste0("High correlation observed for ",
+               (DPA_HighlyCorrelatedCount),
+               " pairs of numeric variable(s) with Correlation.Coefficient>0.95."))
+  
+  (DPA_HighlyCorrelatedPairs <- corr_cross(DPA.Predictors.Numeric,
+  max_pvalue = 0.05, 
+  top = DPA_HighlyCorrelatedCount,
+  rm.na = TRUE,
+  grid = FALSE
+))
+  
+}
+
+if (DPA_HighlyCorrelatedCount > 0) {
+  DPA_HighlyCorrelated <- findCorrelation(DPA_Correlation, cutoff = 0.95)
+
+  (DPA_HighlyCorrelatedForRemoval <- length(DPA_HighlyCorrelated))
+
+  print(paste0("High correlation can be resolved by removing ",
+               (DPA_HighlyCorrelatedForRemoval),
+               " numeric variable(s)."))
+
+  for (j in 1:DPA_HighlyCorrelatedForRemoval) {
+  DPA_HighlyCorrelatedRemovedVariable <- colnames(DPA.Predictors.Numeric)[DPA_HighlyCorrelated[j]]
+  print(paste0("Variable ",
+               j,
+               " for removal: ",
+               DPA_HighlyCorrelatedRemovedVariable))
+  }
+
+}
+
+```
+
+</details>
+
+###  1.3.4 Linear Dependency
+|
+| **[A]** No linear dependencies noted for any subset of numeric variables using the preprocessing summary from the <mark style="background-color: #CCECFF">**caret**</mark> package applying the <span style="color: #0000FF">findLinearCombos</span> method which utilizes the QR decomposition of a matrix to enumerate sets of linear combinations (if they exist). 
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.3.4, warning=FALSE, message=FALSE}
+
+##################################
+# Linear Dependencies
+##################################
+
+##################################
+# Finding linear dependencies
+##################################
+DPA_LinearlyDependent <- findLinearCombos(DPA.Predictors.Numeric)
+
+##################################
+# Identifying the linearly dependent variables
+##################################
+DPA_LinearlyDependent <- findLinearCombos(DPA.Predictors.Numeric)
+
+(DPA_LinearlyDependentCount <- length(DPA_LinearlyDependent$linearCombos))
+
+if (DPA_LinearlyDependentCount == 0) {
+  print("No linearly dependent predictors noted.")
+} else {
+  print(paste0("Linear dependency observed for ",
+               (DPA_LinearlyDependentCount),
+               " subset(s) of numeric variable(s)."))
+  
+  for (i in 1:DPA_LinearlyDependentCount) {
+    DPA_LinearlyDependentSubset <- colnames(DPA.Predictors.Numeric)[DPA_LinearlyDependent$linearCombos[[i]]]
+    print(paste0("Linear dependent variable(s) for subset ",
+                 i,
+                 " include: ",
+                 DPA_LinearlyDependentSubset))
+  }
+  
+}
+
+##################################
+# Identifying the linearly dependent variables for removal
+##################################
+
+if (DPA_LinearlyDependentCount > 0) {
+  DPA_LinearlyDependent <- findLinearCombos(DPA.Predictors.Numeric)
+  
+  DPA_LinearlyDependentForRemoval <- length(DPA_LinearlyDependent$remove)
+  
+  print(paste0("Linear dependency can be resolved by removing ",
+               (DPA_LinearlyDependentForRemoval),
+               " numeric variable(s)."))
+  
+  for (j in 1:DPA_LinearlyDependentForRemoval) {
+  DPA_LinearlyDependentRemovedVariable <- colnames(DPA.Predictors.Numeric)[DPA_LinearlyDependent$remove[j]]
+  print(paste0("Variable ",
+               j,
+               " for removal: ",
+               DPA_LinearlyDependentRemovedVariable))
+  }
+
+}
+
+
+```
+
+</details>
+
+###  1.3.5 Distributional Shape
+|
+| **[A]** Shape transformation was applied to improve against skewness and minimize outliers for data distribution stability using the <span style="color: #0000FF">BoxCox</span> method from the <mark style="background-color: #CCECFF">**caret**</mark> package which transforms the distributional shape for predictors with strictly positive values.
+|
+| **[B]** Skewness measurements were improved for most except for 1 predictor with Skewness>3. 
+|      **[B.1]** <span style="color: #FF0000">concavity_se</span> = +5.10
+|
+| **[C]** Outliers were minimized for most except for 5 predictors which did not show any improvement even after shape transformation as noted using the IQR criterion.
+|      **[C.1]** <span style="color: #FF0000">concavity_mean</span> = 36
+|      **[C.2]** <span style="color: #FF0000">concave.points_mean</span> = 20
+|      **[C.3]** <span style="color: #FF0000">concavity_se</span> = 44
+|      **[C.4]** <span style="color: #FF0000">concave.points_se</span> = 38
+|      **[C.5]** <span style="color: #FF0000">concavity_worst</span> = 24
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.3.5, warning=FALSE, message=FALSE, fig.width=15, fig.height=2}
+
+##################################
+# Shape Transformation
+##################################
+
+##################################
+# Applying a Box-Cox transformation
+##################################
+DPA_BoxCox <- preProcess(DPA.Predictors.Numeric, method = c("BoxCox"))
+DPA_BoxCoxTransformed <- predict(DPA_BoxCox, DPA.Predictors.Numeric)
+
+for (i in 1:ncol(DPA_BoxCoxTransformed)) {
+  Median <- format(round(median(DPA_BoxCoxTransformed[,i],na.rm = TRUE),2), nsmall=2)
+  Mean <- format(round(mean(DPA_BoxCoxTransformed[,i],na.rm = TRUE),2), nsmall=2)
+  Skewness <- format(round(skewness(DPA_BoxCoxTransformed[,i],na.rm = TRUE),2), nsmall=2)
+  print(
+  ggplot(DPA_BoxCoxTransformed, aes(x=DPA_BoxCoxTransformed[,i])) +
+  geom_histogram(binwidth=1,color="black", fill="white") +
+  geom_vline(aes(xintercept=mean(DPA_BoxCoxTransformed[,i])),
+            color="blue", size=1) +
+    geom_vline(aes(xintercept=median(DPA_BoxCoxTransformed[,i])),
+            color="red", size=1) +
+  theme_bw() +
+  ylab("Count") +
+  xlab(names(DPA_BoxCoxTransformed)[i]) +
+  labs(title=names(DPA_BoxCoxTransformed)[i],
+       subtitle=paste0("Median = ", Median,
+                       ", Mean = ", Mean,
+                       ", Skewness = ", Skewness)))
+}
+
+##################################
+# Identifying outliers for the numeric predictors
+##################################
+OutlierCountList <- c()
+
+for (i in 1:ncol(DPA_BoxCoxTransformed)) {
+  Outliers <- boxplot.stats(DPA_BoxCoxTransformed[,i])$out
+  OutlierCount <- length(Outliers)
+  OutlierCountList <- append(OutlierCountList,OutlierCount)
+  OutlierIndices <- which(DPA_BoxCoxTransformed[,i] %in% c(Outliers))
+  print(
+  ggplot(DPA_BoxCoxTransformed, aes(x=DPA_BoxCoxTransformed[,i])) +
+  geom_boxplot() +
+  theme_bw() +
+  theme(axis.text.y=element_blank(), 
+        axis.ticks.y=element_blank()) +
+  xlab(names(DPA_BoxCoxTransformed)[i]) +
+  labs(title=names(DPA_BoxCoxTransformed)[i],
+       subtitle=paste0(OutlierCount, " Outlier(s) Detected")))
+}
+
+DPA_BoxCoxTransformed$diagnosis <- DPA[,c("diagnosis")]
+
+```
+
+</details>
+
+###  1.3.6 Pre-Processed Dataset
+|
+| **[A]**  A total of 12 predictors were removed prior to data exploration and modelling due to issues identified during data preprocessing.
+|      **[A.1]** <span style="color: #FF0000">concavity_se</span> = Low variance and high skewness
+|      **[A.2]** <span style="color: #FF0000">perimeter_worst</span> = High correlation with <span style="color: #FF0000">radius_worst</span>, <span style="color: #FF0000">area_worst</span>, <span style="color: #FF0000">perimeter_mean</span>, <span style="color: #FF0000">radius_mean</span> and <span style="color: #FF0000">area_mean</span>
+|      **[A.3]** <span style="color: #FF0000">radius_worst</span> = High correlation with <span style="color: #FF0000">perimeter_worst</span>, <span style="color: #FF0000">area_worst</span>, <span style="color: #FF0000">radius_mean</span>, <span style="color: #FF0000">perimeter_mean</span> and <span style="color: #FF0000">area_mean</span>
+|      **[A.4]** <span style="color: #FF0000">perimeter_mean</span> = High correlation with <span style="color: #FF0000">radius_mean</span>, <span style="color: #FF0000">area_mean</span>, <span style="color: #FF0000">perimeter_worst</span> and <span style="color: #FF0000">radius_worst</span>
+|      **[A.5]** <span style="color: #FF0000">area_worst</span> = High correlation with <span style="color: #FF0000">radius_worst</span>, <span style="color: #FF0000">perimeter_worst</span> and <span style="color: #FF0000">area_mean</span>
+|      **[A.6]** <span style="color: #FF0000">radius_mean</span> = High correlation with <span style="color: #FF0000">perimeter_mean</span>, <span style="color: #FF0000">area_mean</span>, <span style="color: #FF0000">radius_worst</span> and <span style="color: #FF0000">perimeter_worst </span>.
+|      **[A.7]** <span style="color: #FF0000">perimeter_se</span> = High correlation with <span style="color: #FF0000">radius_se</span>
+|      **[A.8]** <span style="color: #FF0000">area_se</span> = High correlation with <span style="color: #FF0000">radius_se</span>
+|      **[A.9]** <span style="color: #FF0000">concavity_mean</span> = High outlier count even after shape transformation
+|      **[A.10]** <span style="color: #FF0000">concave.points_mean</span> = High outlier count even after shape transformation
+|      **[A.11]** <span style="color: #FF0000">concave.points_se</span> = High outlier count even after shape transformation
+|      **[A.12]** <span style="color: #FF0000">concavity_worst</span> = High outlier count even after shape transformation
+|
+| **[B]** The preprocessed tabular dataset was comprised of 1138 observations and 19 variables (including 1 response and 18 predictors). 
+|      **[B.1]** 1138 rows (observations)
+|      **[B.2]** 19 columns (variables)
+|             **[B.2.1]** 1/19 response = <span style="color: #FF0000">diagnosis</span> (factor)
+|             **[B.2.2]** 18/19 predictors = 18/18 numeric
+|                      **[B.2.2.1]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|                      **[B.2.2.2]** <span style="color: #FF0000">area_mean</span> (numeric)
+|                      **[B.2.2.3]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|                      **[B.2.2.4]** <span style="color: #FF0000">compactness_mean</span> (numeric)
+|                      **[B.2.2.5]** <span style="color: #FF0000">symmetry_mean	</span> (numeric)
+|                      **[B.2.2.6]** <span style="color: #FF0000">fractal_dimension_mean</span> (numeric)
+|                      **[B.2.2.7]** <span style="color: #FF0000">radius_se</span> (numeric)
+|                      **[B.2.2.8]** <span style="color: #FF0000">texture_se</span> (numeric)
+|                      **[B.2.2.9]** <span style="color: #FF0000">smoothness_se</span> (numeric)
+|                      **[B.2.2.10]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|                      **[B.2.2.11]** <span style="color: #FF0000">symmetry_se</span> (numeric)
+|                      **[B.2.2.12]** <span style="color: #FF0000">fractal_dimension_se</span> (numeric)
+|                      **[B.2.2.13]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|                      **[B.2.2.14]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|                      **[B.2.2.15]** <span style="color: #FF0000">compactness_worst</span> (numeric)
+|                      **[B.2.2.16]** <span style="color: #FF0000">concave.points_worst</span> (numeric)
+|                      **[B.2.2.17]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|                      **[B.2.2.18]** <span style="color: #FF0000">fractal_dimension_worst</span> (numeric)
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.3.6, warning=FALSE, message=FALSE, fig.width=15, fig.height=2}
+##################################
+# Creating the pre-modelling
+# train set
+##################################
+PMA <- DPA_BoxCoxTransformed[,!names(DPA_BoxCoxTransformed) %in% c("concavity_se",
+                                                                   "perimeter_worst",
+                                                                   "radius_worst",
+                                                                   "perimeter_mean",
+                                                                   "area_worst",
+                                                                   "radius_mean",
+                                                                   "perimeter_se",
+                                                                   "area_se",
+                                                                   "concavity_mean",
+                                                                   "concave.points_mean",
+                                                                   "concave.points_se",
+                                                                   "concavity_worst")]
+
+##################################
+# Gathering descriptive statistics
+##################################
+(PMA_Skimmed <- skim(PMA))
+
+```
+
+</details>
+
+## 1.4 Data Exploration
+|
+| **[A]** Individual predictors which demonstrated excellent discrimination between <span style="color: #FF0000">diagnosis=M</span> and <span style="color: #FF0000">diagnosis=B</span> in terms of the area under the receiver operating characteristics curve (AUROC>0.80) are as follows:
+|      **[A.1]** <span style="color: #FF0000">concave.points_worst</span> = 0.97
+|      **[A.2]** <span style="color: #FF0000">area_mean</span> = 0.94
+|      **[A.3]** <span style="color: #FF0000">radius_se</span> = 0.87
+|      **[A.4]** <span style="color: #FF0000">compactness_mean</span> = 0.86
+|      **[A.5]** <span style="color: #FF0000">compactness_worst</span> = 0.86
+|
+| **[B]** To allow a better comparison of the ensemble learning methods, only predictors which demonstrated fair discrimination between <span style="color: #FF0000">diagnosis=M</span> and <span style="color: #FF0000">diagnosis=B</span> in terms of the area under the receiver operating characteristics curve (0.70<AUROC<0.80) were selected to proceed with the modelling process, enumerated as follows:
+|      **[B.1]** <span style="color: #FF0000">texture_worst</span> = 0.78
+|      **[B.2]** <span style="color: #FF0000">texture_mean</span> = 0.77
+|      **[B.3]** <span style="color: #FF0000">smoothness_worst</span> = 0.75
+|      **[B.4]** <span style="color: #FF0000">symmetry_worst</span> = 0.74
+|      **[B.5]** <span style="color: #FF0000">compactness_se</span> = 0.73
+|      **[B.6]** <span style="color: #FF0000">smoothness_mean</span> = 0.72
+|
+| **[C]** Using an 80-20 ratio, train and test sets were created from the preliminary dataset for the subsequent analysis and modelling steps:
+|      **[C.1]** Training Set = 912 observations
+|      **[C.2]** Test Set = 226 observations
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.4, warning=FALSE, message=FALSE}
+##################################
+# Loading dataset
+##################################
+DPA <- PMA
+
+##################################
+# Listing all predictors
+##################################
+DPA.Predictors <- DPA[,!names(DPA) %in% c("diagnosis")]
+
+##################################
+# Listing all numeric predictors
+##################################
+DPA.Predictors.Numeric <- DPA.Predictors[,sapply(DPA.Predictors, is.numeric)]
+ncol(DPA.Predictors.Numeric)
+
+##################################
+# Converting response variable data type to factor
+##################################
+DPA$diagnosis <- as.factor(DPA$diagnosis)
+length(levels(DPA$diagnosis))
+
+##################################
+# Formulating the box plots
+##################################
+featurePlot(x = DPA.Predictors.Numeric, 
+            y = DPA$diagnosis,
+            plot = "box",
+            scales = list(x = list(relation="free", rot = 90), 
+                          y = list(relation="free")),
+            adjust = 1.5, 
+            pch = "|", 
+            layout = c(6, 3))
+
+##################################
+# Obtaining the AUROC
+##################################
+AUROC <- filterVarImp(x = DPA.Predictors.Numeric,
+                        y = DPA$diagnosis)
+
+##################################
+# Formulating the summary table
+##################################
+AUROC_Summary <- AUROC 
+
+AUROC_Summary$Predictor <- rownames(AUROC)
+names(AUROC_Summary)[1] <- "AUROC"
+AUROC_Summary$Metric <- rep("AUROC",nrow(AUROC))
+
+AUROC_Summary[order(AUROC_Summary$AUROC, decreasing=TRUE),] 
+
+##################################
+# Exploring predictor performance
+##################################
+dotplot(Predictor ~ AUROC | Metric, 
+        AUROC_Summary,
+        origin = 0,
+        type = c("p", "h"),
+        pch = 16,
+        cex = 2,
+        alpha = 0.45,
+        prepanel = function(x, y) {
+            list(ylim = levels(reorder(y, x)))
+        },
+        panel = function(x, y, ...) {
+            panel.dotplot(x, reorder(y, x), ...)
+        })
+
+##################################
+# Creating the pre-modelling dataset
+# into the train and test sets
+##################################
+DPA <- DPA[,colnames(DPA) %in% c("diagnosis",
+                                 "texture_worst",
+                                 "texture_mean",
+                                 "smoothness_worst",
+                                 "symmetry_worst",
+                                 "compactness_se",
+                                 "smoothness_mean")]
+set.seed(12345678)
+MA_Train_Index  <- createDataPartition(DPA$diagnosis,p=0.8)[[1]]
+MA_Train        <- DPA[ MA_Train_Index, ]
+MA_Test         <- DPA[-MA_Train_Index, ]
+
+dim(MA_Train)
+dim(MA_Test)
+
+```
+
+</details>
+
+## 1.5 Model Boosting
+|
+| [Model Boosting](https://www.statlearning.com/) is an ensemble approach which applies a sequential algorithm that makes predictions for a defined set of rounds on the entire training sample and iteratively improves the performance using the information from the prior round's prediction accuracy. Boosted models build a weak learner that has low predictive accuracy - possessing low variance and high bias. As boosted models go through the process of sequentially improving previous learners, the overall model is able to slowly reduce the bias at each step with minimal variance increase. The final model tends to have sufficiently low bias and variance.
+|
+###  1.5.1 Adaptive Boosting (MBS_AB)
+|
+| [Adaptive Boosting](https://www.semanticscholar.org/paper/Experiments-with-a-New-Boosting-Algorithm-Freund-Schapire/68c1bfe375dde46777fe1ac8f3636fb651e3f0f8) applies an adaptive reweighting and combining approach which is initiated using a learner based on the overall mean or the log-odds of the target variable. For each boosting iteration, a weak learner (using a decision stump - a single level decision tree) is fitted to the training data applying equal sample weights. With the predictions obtained, the weighted error of the base learner is determined and used to calculate the base learner's weight in the ensemble. The sample weights are recomputed, putting more weight on difficult to classify instances and less on those already handled well. The process is repeated for a defined number of cycles where new weak learners are added sequentially that focus their training on the more difficult patterns. The final ensemble prediction is determined as the weighted sum of the individual predictions from all boosting iterations.
+|
+| **[A]** The adaptive boosting model was implemented through the <mark style="background-color: #CCECFF">**adabag**</mark> package. 
+|
+| **[B]** The model contains 3 hyperparameters:
+|      **[B.1]** <span style="color: #FF0000">mfinal</span> = the number of iterations for which boosting is run or the number of trees to use made to vary across a range of values equal to 50 to 100
+|      **[B.2]** <span style="color: #FF0000">maxdepth</span> = maximum depth of the trees made to vary across a range of values equal to 4 to 6
+|      **[B.3]** <span style="color: #FF0000">coeflearn</span> = coefficient learning method held constant using the setting equal to Breiman
+|
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves mfinal=100, maxdepth=6 and coeflearn=Breiman
+|      **[C.2]** AUROC = 0.97109
+|
+| **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
+|      **[D.1]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.99564
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.5.1, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the cross validation process
+# using the Repeated K-Fold
+##################################
+set.seed(12345678)
+RKFold_Control <- trainControl(method="repeatedcv",
+                              summaryFunction = twoClassSummary,
+                              number=5,
+                              repeats=5,
+                              classProbs = TRUE)
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+AB_Grid = expand.grid(mfinal = c(50,100,100),
+                      maxdepth = c(4,5,6),
+                      coeflearn = "Breiman")
+
+##################################
+# Running the adaptive boosting model
+# by setting the caret method to 'AdaBoost.M1'
+##################################
+set.seed(12345678)
+MBS_AB_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                 y = MA_Train$diagnosis,
+                 method = "AdaBoost.M1",
+                 tuneGrid = AB_Grid,
+                 metric = "ROC",
+                 trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+MBS_AB_Tune
+
+MBS_AB_Tune$finalModel
+
+MBS_AB_Tune$results
+
+(MBS_AB_Train_AUROC <- MBS_AB_Tune$results[MBS_AB_Tune$results$mfinal==MBS_AB_Tune$bestTune$mfinal &
+                                           MBS_AB_Tune$results$maxdepth==MBS_AB_Tune$bestTune$maxdepth &
+                                           MBS_AB_Tune$results$coeflearn==MBS_AB_Tune$bestTune$coeflearn,
+                                           c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+MBS_AB_VarImp <- varImp(MBS_AB_Tune, scale = TRUE)
+plot(MBS_AB_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked Variable Importance : Adaptive Boosting",
+     xlab="Scaled Variable Importance Metrics",
+     ylab="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MBS_AB_Test <- data.frame(MBS_AB_Test_Observed = MA_Test$diagnosis,
+                          MBS_AB_Test_Predicted = predict(MBS_AB_Tune,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                          type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+MBS_AB_Test_ROC <- roc(response = MBS_AB_Test$MBS_AB_Test_Observed,
+                       predictor = MBS_AB_Test$MBS_AB_Test_Predicted.M,
+                       levels = rev(levels(MBS_AB_Test$MBS_AB_Test_Observed)))
+
+(MBS_AB_Test_AUROC <- auc(MBS_AB_Test_ROC)[1])
+
+```
+
+</details>
+
+###  1.5.2 Stochastic Gradient Boosting (MBS_GBM)
+|
+| [Stochastic Gradient Boosting](https://www.sciencedirect.com/science/article/abs/pii/S0167947301000652) works on the principle of the stage-wise addition method but the statistical framework cast boosting as a numerical optimization problem where the objective is to minimize the loss of the model by adding weak learners using a gradient descent-like procedure. An initial learner is developed based on the overall mean or the log-odds of the target variable. For each boosting iteration, a subset of the training data will be sampled with replacement and pseudo-residuals are calculated. A new base learner is fitted to the subsampled data using the pseudo-residuals as the target variable. Gradient descent optimization is applied to minimize the loss function (mean squared error or cross-entropy). Predicted values are obtained and the ensemble prediction is updated for all training samples. The process is repeated for a defined number of cycles with the final ensemble prediction determined as the sum of the individual predictions from all boosting iterations.
+|
+| **[A]** The stochastic gradient boosting model was implemented through the <mark style="background-color: #CCECFF">**gbm**</mark> package. 
+|
+| **[B]** The model contains 1 hyperparameter:
+|      **[B.1]** <span style="color: #FF0000">n.trees</span> = total number of trees to fit (equivalent to the number of iterations and the number of basis functions in the additive expansion) held constant at a value equal to 500
+|      **[B.2]** <span style="color: #FF0000">interaction.depth</span> = maximum depth of each tree (equivalent to the highest level of variable interactions allowed) made to vary across a range of values equal to 4 to 6
+|      **[B.3]** <span style="color: #FF0000">shrinkage</span> = learning rate or step-size reduction applied to each tree in the expansion made to vary across a range of values equal to 0.001 to 0.1
+|      **[B.4]** <span style="color: #FF0000">n.minobsinnode</span> = minimum number of observations in the terminal nodes of the trees made to vary across a range of values equal to 5 to 15
+|
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves n.trees=500, interaction.depth=5, shrinkage=0.1 and n.minobsinnode=5
+|      **[C.2]** AUROC = 0.96473
+|
+| **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
+|      **[D.1]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.98306
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.5.2, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+GBM_Grid = expand.grid(n.trees = 500,
+                      interaction.depth = c(4,5,6),
+                      shrinkage = c(0.1,0.01,0.001),
+                      n.minobsinnode = c(5, 10, 15))
+
+##################################
+# Running the stochastic gradient boosting model
+# by setting the caret method to 'gbm'
+##################################
+set.seed(12345678)
+MBS_GBM_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                 y = MA_Train$diagnosis,
+                 method = "gbm",
+                 tuneGrid = GBM_Grid,
+                 metric = "ROC",
+                 trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+MBS_GBM_Tune
+
+MBS_GBM_Tune$finalModel
+
+MBS_GBM_Tune$results
+
+(MBS_GBM_Train_AUROC <- MBS_GBM_Tune$results[MBS_GBM_Tune$results$n.trees==MBS_GBM_Tune$bestTune$n.trees &
+                                             MBS_GBM_Tune$results$shrinkage==MBS_GBM_Tune$bestTune$shrinkage &
+                                             MBS_GBM_Tune$results$n.minobsinnode==MBS_GBM_Tune$bestTune$n.minobsinnode &
+                                             MBS_GBM_Tune$results$interaction.depth==MBS_GBM_Tune$bestTune$interaction.depth,
+                                             c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+MBS_GBM_VarImp <- varImp(MBS_GBM_Tune, scale = TRUE)
+plot(MBS_GBM_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked VariGBMle Importance : Stochastic Gradient Boosting",
+     xlGBM="Scaled Variable Importance Metrics",
+     ylGBM="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MBS_GBM_Test <- data.frame(MBS_GBM_Test_Observed = MA_Test$diagnosis,
+                          MBS_GBM_Test_Predicted = predict(MBS_GBM_Tune,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                          type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+MBS_GBM_Test_ROC <- roc(response = MBS_GBM_Test$MBS_GBM_Test_Observed,
+                       predictor = MBS_GBM_Test$MBS_GBM_Test_Predicted.M,
+                       levels = rev(levels(MBS_GBM_Test$MBS_GBM_Test_Observed)))
+
+(MBS_GBM_Test_AUROC <- auc(MBS_GBM_Test_ROC)[1])
+
+```
+
+</details>
+
+###  1.5.3 Extreme Gradient Boosting (MBS_XGB)
+|
+| [Extreme Gradient Boosting](https://arxiv.org/abs/1603.02754) is an optimized and scalable version of the stochastic gradient boosting developed to overcome its limitations. The algorithm introduced enhancements including regularization terms to control overfitting and a second-order gradient approximation to improve convergence speed. Parallel processing is also implemented, making the computations faster than traditional GBM for large datasets.
+|
+| **[A]** The extreme gradient boosting model was implemented through the <mark style="background-color: #CCECFF">**xgboost**</mark> package. 
+|
+| **[B]** The model contains 1 hyperparameter:
+|      **[B.1]** <span style="color: #FF0000">nrounds</span> = maximum number of iterations held constant at a value equal to 500
+|      **[B.2]** <span style="color: #FF0000">max_depth</span> = maximum depth of the trees made to vary across a range of values equal to 4 to 6
+|      **[B.3]** <span style="color: #FF0000">eta</span> = step size or learning rate of each boosting step made to vary across a range of values equal to 0.2 to 0.4
+|      **[B.4]** <span style="color: #FF0000">gamma</span> = minimum loss reduction required to make a further partition on a leaf node of the tree made to vary across a range of values equal to 0.001 to 0.1
+|      **[B.5]** <span style="color: #FF0000">colsample_bytree</span> = subsample ratio of columns when constructing each tree held constant at a value equal to 1
+|      **[B.6]** <span style="color: #FF0000">min_child_weight</span> = minimum sum of instance weight (hessian) needed in a child held constant at a value equal to 1
+|      **[B.7]** <span style="color: #FF0000">subsample</span> = subsample ratio of the training instance held constant at a value equal to 1
+|
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves nrounds=500, max_depth=6, eta=0.3, gamma=0.001, colsample_bytree=1, min_child_weight=1 and subsample=1
+|      **[C.2]** AUROC = 0.96403
+|
+| **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
+|      **[D.1]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.98972
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.5.3, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+XGB_Grid = expand.grid(nrounds = 500,
+                      max_depth = c(4,5,6),
+                      eta = c(0.2,0.3,0.4),
+                      gamma = c(0.1,0.01,0.001),
+                      colsample_bytree = 1,
+                      min_child_weight = 1,
+                      subsample = 1)
+
+##################################
+# Running the extreme gradient boosting model
+# by setting the caret method to 'xgbTree'
+##################################
+set.seed(12345678)
+MBS_XGB_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                 y = MA_Train$diagnosis,
+                 method = "xgbTree",
+                 tuneGrid = XGB_Grid,
+                 metric = "ROC",
+                 trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+MBS_XGB_Tune
+
+MBS_XGB_Tune$finalModel
+
+MBS_XGB_Tune$results
+
+(MBS_XGB_Train_AUROC <- MBS_XGB_Tune$results[MBS_XGB_Tune$results$nrounds==MBS_XGB_Tune$bestTune$nrounds &
+                                             MBS_XGB_Tune$results$max_depth==MBS_XGB_Tune$bestTune$max_depth &
+                                             MBS_XGB_Tune$results$eta==MBS_XGB_Tune$bestTune$eta &
+                                             MBS_XGB_Tune$results$gamma==MBS_XGB_Tune$bestTune$gamma &
+                                             MBS_XGB_Tune$results$colsample_bytree==MBS_XGB_Tune$bestTune$colsample_bytree &
+                                             MBS_XGB_Tune$results$min_child_weight==MBS_XGB_Tune$bestTune$min_child_weight &
+                                             MBS_XGB_Tune$results$subsample==MBS_XGB_Tune$bestTune$subsample,
+                                             c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+MBS_XGB_VarImp <- varImp(MBS_XGB_Tune, scale = TRUE)
+plot(MBS_XGB_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked VariXGBle Importance : Extreme Gradient Boosting",
+     xlXGB="Scaled Variable Importance Metrics",
+     ylXGB="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MBS_XGB_Test <- data.frame(MBS_XGB_Test_Observed = MA_Test$diagnosis,
+                          MBS_XGB_Test_Predicted = predict(MBS_XGB_Tune,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                          type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+MBS_XGB_Test_ROC <- roc(response = MBS_XGB_Test$MBS_XGB_Test_Observed,
+                       predictor = MBS_XGB_Test$MBS_XGB_Test_Predicted.M,
+                       levels = rev(levels(MBS_XGB_Test$MBS_XGB_Test_Observed)))
+
+(MBS_XGB_Test_AUROC <- auc(MBS_XGB_Test_ROC)[1])
+
+```
+
+</details>
+
+## 1.6 Model Bagging
+|
+| [Model Bagging](https://www.statlearning.com/), also known as bootstrap aggregation, is an ensemble learning approach that combines the benefits of bootstrapping and aggregation to yield a stable model and improve the prediction performance of a statistical learning method. In bagging, equal-sized subsets are sampled from a dataset with bootstrapping (repeated subsampling of the rows of the original data with replacement) and models trained on each of the subsets independently and in parallel. Aggregation involves combining the results from each model by averaging or voting to get a final result. The bagging process reduces the variance of the statistical learning method after consolidation. The final model tends to have sufficiently low variance by increasing robustness to noise in the data.
+|
+###  1.6.1 Random Forest (MBG_RF)
+|
+| [Random Forest](https://link.springer.com/article/10.1023/A:1010933404324) is an ensemble learning method made up of a large set of small decision trees called estimators, with each producing its own prediction. The random forest model aggregates the predictions of the estimators to produce a more accurate prediction. The algorithm involves bootstrap aggregating (where smaller subsets of the training data are repeatedly subsampled with replacement), random subspacing (where a subset of features are sampled and used to train each individual estimator), estimator training (where unpruned decision trees are formulated for each estimator) and inference by aggregating the predictions of all estimators.
+|
+| **[A]** The random forest model from the  <mark style="background-color: #CCECFF">**randomForest**</mark> package was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model contains 1 hyperparameter:
+|      **[B.1]** <span style="color: #FF0000">mtry</span> = number of randomly selected predictors made to vary across a range of values equal to 2 to 5
+|
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves mtry=2
+|      **[C.2]** AUROC = 0.97000
+|
+| **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
+|      **[D.1]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">texture_mean</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.99195
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.6.1, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+RF_Grid = data.frame(mtry = c(2,3,4,5))
+
+##################################
+# Running the random forest model
+# by setting the caret method to 'rf'
+##################################
+set.seed(12345678)
+MBG_RF_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                 y = MA_Train$diagnosis,
+                 method = "rf",
+                 tuneGrid = RF_Grid,
+                 metric = "ROC",
+                 trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+MBG_RF_Tune
+
+MBG_RF_Tune$finalModel
+
+MBG_RF_Tune$results
+
+(MBG_RF_Train_AUROC <- MBG_RF_Tune$results[MBG_RF_Tune$results$mtry==MBG_RF_Tune$bestTune$mtry,
+                                           c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+MBG_RF_VarImp <- varImp(MBG_RF_Tune, scale = TRUE)
+plot(MBG_RF_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked Variable Importance : Random Forest",
+     xlab="Scaled Variable Importance Metrics",
+     ylab="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MBG_RF_Test <- data.frame(MBG_RF_Test_Observed = MA_Test$diagnosis,
+                          MBG_RF_Test_Predicted = predict(MBG_RF_Tune,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                          type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+MBG_RF_Test_ROC <- roc(response = MBG_RF_Test$MBG_RF_Test_Observed,
+                       predictor = MBG_RF_Test$MBG_RF_Test_Predicted.M,
+                       levels = rev(levels(MBG_RF_Test$MBG_RF_Test_Observed)))
+
+(MBG_RF_Test_AUROC <- auc(MBG_RF_Test_ROC)[1])
+
+```
+
+</details>
+
+###  1.6.2 Bagged Classification and Regression Trees (MBG_BCART)
+|
+| [Bagged Classification and Regression Trees](https://link.springer.com/article/10.1007/BF00058655) combine bootstrapping and decision trees to construct an ensemble. The modeling process involves generating bootstrap samples of the original data, training an unpruned decision tree for each bootstrap subset of the data and implementing an ensemble voting for all the individual decision tree predictions to formulate the final prediction. The bootstrap aggregation (bagging) mechanism improves the model performance by reducing variance. Although the individual decision trees in the model are identically distributed, they are not necessarily independent and share similar structure. This similarity, known as tree correlation, is an essential factor that prevents further reduction of variance.
+|
+| **[A]** The bagged CART model from the <mark style="background-color: #CCECFF">**ipred**</mark>, <mark style="background-color: #CCECFF">**plyr**</mark> and <mark style="background-color: #CCECFF">**e1071**</mark> packages was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model does not contain any hyperparameter.
+|
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
+|      **[C.2]** AUROC = 0.96444
+|
+| **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
+|      **[D.1]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.98583
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.6.2, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+# No hyperparameter tuning process required
+
+##################################
+# Running the bagged CART model
+# by setting the caret method to 'treebag'
+##################################
+set.seed(12345678)
+MBG_BCART_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                        y = MA_Train$diagnosis,
+                        method = "treebag",
+                        nbagg = 50,
+                        metric = "ROC",
+                        trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+MBG_BCART_Tune
+
+MBG_BCART_Tune$finalModel
+
+MBG_BCART_Tune$results
+
+(MBG_BCART_Train_AUROC <- MBG_BCART_Tune$results$ROC)
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+MBG_BCART_VarImp <- varImp(MBG_BCART_Tune, scale = TRUE)
+plot(MBG_BCART_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked Variable Importance : Bagged Classification and Regression Trees",
+     xlab="Scaled Variable Importance Metrics",
+     ylab="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MBG_BCART_Test <- data.frame(MBG_BCART_Test_Observed = MA_Test$diagnosis,
+                             MBG_BCART_Test_Predicted = predict(MBG_BCART_Tune,
+                                                                MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                                type = "prob"))
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+MBG_BCART_Test_ROC <- roc(response = MBG_BCART_Test$MBG_BCART_Test_Observed,
+                          predictor = MBG_BCART_Test$MBG_BCART_Test_Predicted.M,
+                          levels = rev(levels(MBG_BCART_Test$MBG_BCART_Test_Observed)))
+
+(MBG_BCART_Test_AUROC <- auc(MBG_BCART_Test_ROC)[1])
+
+```
+
+</details>
+
+## 1.7 Model Stacking
+|
+| [Model Stacking](https://www.manning.com/books/ensemble-methods-for-machine-learning), also known as stacked generalization, is an ensemble approach which involves creating a variety of base learners and using them to create intermediate predictions, one for each learned model. A meta-model is incorporated that gains knowledge of the same target from intermediate predictions. Unlike bagging, in stacking, the models are typically different (e.g. not all decision trees) and fit on the same dataset (e.g. instead of samples of the training dataset). Unlike boosting, in stacking, a single model is used to learn how to best combine the predictions from the contributing models (e.g. instead of a sequence of models that correct the predictions of prior models). Stacking is appropriate when the predictions made by the base learners or the errors in predictions made by the models have minimal correlation. Achieving an improvement in performance is dependent upon the choice of base learners and whether they are sufficiently skillful in their predictions.
+|
+###  1.7.1 Base Learner Model Development using Linear Discriminant Analysis (BAL_LDA)
+|
+| [Linear Discriminant Analysis](https://www.semanticscholar.org/paper/THE-USE-OF-MULTIPLE-MEASUREMENTS-IN-TAXONOMIC-Fisher/ab21376e43ac90a4eafd14f0f02a0c87502b6bbf) finds a linear combination of features that best separates the classes in a data set by projecting the data onto a lower-dimensional space that maximizes the separation between the classes. The algorithm searches for a set of linear discriminants that maximize the ratio of between-class variance to within-class variance by evaluating directions in the feature space that best separate the different classes of data. LDA assumes that the data has a Gaussian distribution and that the covariance matrices of the different classes are equal, in addition to the data being linearly separable by the presence of a linear decision boundary can accurately classify the different classes.
+|
+| **[A]** The linear discriminant analysis model from the  <mark style="background-color: #CCECFF">**MASS**</mark> package was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model does not contain any hyperparameter.
+|
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
+|      **[C.2]** AUROC = 0.87628
+|
+| **[D]** The model does not allow for ranking of predictors in terms of variable importance.
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.88833
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.1, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+# No hyperparameter tuning process required
+
+##################################
+# Running the linear discriminant analysis model
+# by setting the caret method to 'lda'
+##################################
+set.seed(12345678)
+BAL_LDA_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                        y = MA_Train$diagnosis,
+                        method = "lda",
+                        preProc = c("center","scale"),
+                        metric = "ROC",
+                        trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+BAL_LDA_Tune
+
+BAL_LDA_Tune$finalModel
+
+BAL_LDA_Tune$results
+
+(BAL_LDA_Train_AUROC <- BAL_LDA_Tune$results$ROC)
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+# model does not support variable importance measurement
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+BAL_LDA_Test <- data.frame(BAL_LDA_Test_Observed = MA_Test$diagnosis,
+                           BAL_LDA_Test_Predicted = predict(BAL_LDA_Tune,
+                                                            MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                            type = "prob"))
+
+BAL_LDA_Test
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+BAL_LDA_Test_ROC <- roc(response = BAL_LDA_Test$BAL_LDA_Test_Observed,
+                        predictor = BAL_LDA_Test$BAL_LDA_Test_Predicted.M,
+                        levels = rev(levels(BAL_LDA_Test$BAL_LDA_Test_Observed)))
+
+(BAL_LDA_Test_AUROC <- auc(BAL_LDA_Test_ROC)[1])
+
+```
+
+</details>
+
+###  1.7.2 Base Learner Model Development using Classification and Regression Trees (BAL_CART)
+|
+| [Classification and Regression Trees](https://www.semanticscholar.org/paper/Classification-and-Regression-Trees-Breiman-Friedman/8017699564136f93af21575810d557dba1ee6fc6) construct binary trees for both both nominal and continuous input attributes using Gini Index as its splitting criteria. The algorithm handles missing values by surrogating tests to approximate outcomes. In the pruning phase, CART uses pre-pruning technique called Cost-Complexity pruning to remove redundant branches from the decision tree to improve the accuracy. In the first stage, a sequence of increasingly smaller trees are built on the training data. In the second stage, one of these tree is chosen as the pruned tree, based on its classification accuracy on a pruning set, adopting a cross-validated method in its pruning technique.
+|
+| **[A]** The classification and regression trees model from the  <mark style="background-color: #CCECFF">**rpart**</mark> package was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model contains 1 hyperparameter:
+|      **[B.1]** <span style="color: #FF0000">cp</span> = complexity parameter threshold made to vary across a range of values equal to 0.001 to 0.020
+|
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves cp=0.001
+|      **[C.2]** AUROC = 0.86145
+|
+| **[D]** The model allows for ranking of predictors in terms of variable importance. The top-performing predictors in the model are as follows:
+|      **[D.1]** <span style="color: #FF0000">smoothness_worst</span> (numeric)
+|      **[D.2]** <span style="color: #FF0000">symmetry_worst</span> (numeric)
+|      **[D.3]** <span style="color: #FF0000">texture_worst</span> (numeric)
+|      **[D.4]** <span style="color: #FF0000">compactness_se</span> (numeric)
+|      **[D.5]** <span style="color: #FF0000">smoothness_mean</span> (numeric)
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.92106
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.2, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+CART_Grid = data.frame(cp = c(0.001, 0.005, 0.010, 0.015, 0.020))
+
+##################################
+# Running the classification and regression tree model
+# by setting the caret method to 'rpart'
+##################################
+set.seed(12345678)
+BAL_CART_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                       y = MA_Train$diagnosis,
+                       method = "rpart",
+                       tuneGrid = CART_Grid,
+                       metric = "ROC",
+                       trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+BAL_CART_Tune
+
+BAL_CART_Tune$finalModel
+
+BAL_CART_Tune$results
+
+(BAL_CART_Train_AUROC <- BAL_CART_Tune$results[BAL_CART_Tune$results$cp==BAL_CART_Tune$bestTune$cp,
+                                                     c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+BAL_CART_VarImp <- varImp(BAL_CART_Tune, scale = TRUE)
+plot(BAL_CART_VarImp,
+     top=6,
+     scales=list(y=list(cex = .95)),
+     main="Ranked Variable Importance : Classification and Regression Trees",
+     xlab="Scaled Variable Importance Metrics",
+     ylab="Predictors",
+     cex=2,
+     origin=0,
+     alpha=0.45)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+BAL_CART_Test <- data.frame(BAL_CART_Test_Observed = MA_Test$diagnosis,
+                            BAL_CART_Test_Predicted = predict(BAL_CART_Tune,
+                                                              MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                              type = "prob"))
+
+BAL_CART_Test
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+BAL_CART_Test_ROC <- roc(response = BAL_CART_Test$BAL_CART_Test_Observed,
+                         predictor = BAL_CART_Test$BAL_CART_Test_Predicted.M,
+                         levels = rev(levels(BAL_CART_Test$BAL_CART_Test_Observed)))
+
+(BAL_CART_Test_AUROC <- auc(BAL_CART_Test_ROC)[1])
+
+```
+
+</details>
+
+###  1.7.3 Base Learner Model Development using Support Vector Machine - Radial Basis Function Kernel (BAL_SVM_R)
+|
+| [Support Vector Machine](https://dl.acm.org/doi/10.1145/130385.130401) plots each observation in an N-dimensional space corresponding to the number of features in the data set and finds a hyperplane that maximally separates the different classes by a maximally large margin (which is defined as the distance between the hyperplane and the closest data points from each class). The algorithm applies kernel transformation by mapping non-linearly separable data using the similarities between the points in a high-dimensional feature space for improved discrimination.
+|
+| **[A]** The support vector machine (radial basis function kernel) model from the  <mark style="background-color: #CCECFF">**kernlab**</mark> package was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model contains 2 hyperparameters:
+|      **[B.1]** <span style="color: #FF0000">sigma</span> = sigma held constant at a value of 0.21332
+|      **[B.2]** <span style="color: #FF0000">C</span> = cost made to vary across a range of 14 default values
+|
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves sigma=0.17905 and C=2048
+|      **[C.2]** AUROC = 0.90977
+|
+| **[D]** The model does not allow for ranking of predictors in terms of variable importance.
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.93762
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.3, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+# used a range of default values
+
+##################################
+# Running the support vector machine model
+# by setting the caret method to 'svmRadial'
+##################################
+set.seed(12345678)
+BAL_SVM_R_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                        y = MA_Train$diagnosis,
+                        method = "svmRadial",
+                        preProc = c("center", "scale"),
+                        tuneLength = 14,
+                        metric = "ROC",
+                        trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+BAL_SVM_R_Tune
+
+BAL_SVM_R_Tune$finalModel
+
+BAL_SVM_R_Tune$results
+
+(BAL_SVM_R_Train_AUROC <- BAL_SVM_R_Tune$results[BAL_SVM_R_Tune$results$C==BAL_SVM_R_Tune$bestTune$C,
+                                                       c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+# model does not support variable importance measurement
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+BAL_SVM_R_Test <- data.frame(BAL_SVM_R_Test_Observed = MA_Test$diagnosis,
+                             BAL_SVM_R_Test_Predicted = predict(BAL_SVM_R_Tune,
+                                                                MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                                type = "prob"))
+
+BAL_SVM_R_Test
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+BAL_SVM_R_Test_ROC <- roc(response = BAL_SVM_R_Test$BAL_SVM_R_Test_Observed,
+                          predictor = BAL_SVM_R_Test$BAL_SVM_R_Test_Predicted.M,
+                          levels = rev(levels(BAL_SVM_R_Test$BAL_SVM_R_Test_Observed)))
+
+(BAL_SVM_R_Test_AUROC <- auc(BAL_SVM_R_Test_ROC)[1])
+
+```
+
+</details>
+
+###  1.7.4 Base Learner Model Development using K-Nearest Neighbors (BAL_KNN)
+|
+| [K-Nearest Neighbors](https://ieeexplore.ieee.org/document/1053964) use proximity to make predictions about the class grouping of an individual data point. The algorithm examines the labels of a chosen number of data points surrounding a target data point given a distance-based similarity metric, in order to make a prediction about the class that the data point falls into. The process involves setting a value for the chosen number of neighbors, calculating the distance between the target point across all instances, sorting the calculated distances, obtaining the labels of the top entries and returning the prediction for the target point.
+|
+| **[A]** The k-nearest neighbors model was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model contains 1 hyperparameter:
+|      **[B.1]** <span style="color: #FF0000">k</span> = number of neighbors made to vary across a range of values equal to 1 to 15
+|
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves k=1
+|      **[C.2]** AUROC = 0.90764
+|
+| **[D]** The model does not allow for ranking of predictors in terms of variable importance.
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.93611
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.4, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+KNN_Grid = data.frame(k = 1:15)
+
+##################################
+# Running the k-nearest neighbors model
+# by setting the caret method to 'knn'
+##################################
+set.seed(12345678)
+BAL_KNN_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                      y = MA_Train$diagnosis,
+                      method = "knn",
+                      preProc = c("center", "scale"),
+                      tuneGrid = KNN_Grid,
+                      metric = "ROC",
+                      trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+BAL_KNN_Tune
+
+BAL_KNN_Tune$finalModel
+
+BAL_KNN_Tune$results
+
+(BAL_KNN_Train_AUROC <- BAL_KNN_Tune$results[BAL_KNN_Tune$results$k==BAL_KNN_Tune$bestTune$k,
+                                                   c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+# model does not support variable importance measurement
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+BAL_KNN_Test <- data.frame(BAL_KNN_Test_Observed = MA_Test$diagnosis,
+                           BAL_KNN_Test_Predicted = predict(BAL_KNN_Tune,
+                                                            MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                            type = "prob"))
+
+BAL_KNN_Test
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+BAL_KNN_Test_ROC <- roc(response = BAL_KNN_Test$BAL_KNN_Test_Observed,
+                        predictor = BAL_KNN_Test$BAL_KNN_Test_Predicted.M,
+                        levels = rev(levels(BAL_KNN_Test$BAL_KNN_Test_Observed)))
+
+(BAL_KNN_Test_AUROC <- auc(BAL_KNN_Test_ROC)[1])
+
+```
+
+</details>
+
+###  1.7.5 Base Learner Model Development using Naive Bayes (BAL_NB)
+|
+| [Naive Bayes Classifier](https://www.jstor.org/stable/2682766) categorizes instances by applying Bayes Theorem in determining posterior probabilities as conditioned by the likelihood of features, and prior probabilities pertaining to both events and features. The algorithm naively assumes independence between features and assigns the same weight (degree of significance) to all given features. The class conditional probabilities and the prior probabilities are calculated to yield the posterior probability, and operates by returning the class, which has the maximum posterior probability out of a group of classes.
+|
+| **[A]** The naive bayes model from the  <mark style="background-color: #CCECFF">**klaR**</mark> package was implemented through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model contains 3 hyperparameters:
+|      **[B.1]** <span style="color: #FF0000">fL</span> = laplace correction held constant at a value of 2
+|      **[B.2]** <span style="color: #FF0000">adjust</span> = bandwidth adjustment held constant at a value of FALSE
+|      **[B.3]** <span style="color: #FF0000">usekernel</span> = distribution type made to vary across a range of levels equal to TRUE and FALSE
+|
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves fL=2, adjust=FALSE and usekernel=FALSE
+|      **[C.2]** AUROC = 0.88735
+|
+| **[D]** The model does not allow for ranking of predictors in terms of variable importance.
+|
+| **[E]** The independent test model performance of the final model is summarized as follows:
+|      **[E.1]** AUROC = 0.90383
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.5, warning=FALSE, message=FALSE}
+
+##################################
+# Setting the conditions
+# for hyperparameter tuning
+##################################
+NB_Grid = data.frame(usekernel = c(TRUE, FALSE), 
+                     fL = 2, 
+                     adjust = FALSE)
+
+##################################
+# Running the naive bayes model
+# by setting the caret method to 'nb'
+##################################
+set.seed(12345678)
+BAL_NB_Tune <- train(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                     y = MA_Train$diagnosis,
+                     method = "nb",
+                     tuneGrid = NB_Grid,
+                     metric = "ROC",
+                     trControl = RKFold_Control)
+
+##################################
+# Reporting the cross-validation results
+# for the train set
+##################################
+BAL_NB_Tune
+
+BAL_NB_Tune$finalModel
+
+BAL_NB_Tune$results
+
+(BAL_NB_Train_AUROC <- BAL_NB_Tune$results[BAL_NB_Tune$results$usekernel==BAL_NB_Tune$bestTune$usekernel &
+                                                 BAL_NB_Tune$results$adjust==BAL_NB_Tune$bestTune$adjust &
+                                                 BAL_NB_Tune$results$fL==BAL_NB_Tune$bestTune$fL,
+                                                 c("ROC")])
+
+##################################
+# Identifying and plotting the
+# best model predictors
+##################################
+# model does not support variable importance measurement
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+BAL_NB_Test <- data.frame(BAL_NB_Test_Observed = MA_Test$diagnosis,
+                          BAL_NB_Test_Predicted = predict(BAL_NB_Tune,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")],
+                                                          type = "prob"))
+
+BAL_NB_Test
+
+##################################
+# Reporting the independent evaluation results
+# for the test set
+##################################
+BAL_NB_Test_ROC <- roc(response = BAL_NB_Test$BAL_NB_Test_Observed,
+                       predictor = BAL_NB_Test$BAL_NB_Test_Predicted.M,
+                       levels = rev(levels(BAL_NB_Test$BAL_NB_Test_Observed)))
+
+(BAL_NB_Test_AUROC <- auc(BAL_NB_Test_ROC)[1])
+
+```
+
+</details>
+
+
+###  1.7.6 Base Learner Ensemble
+|
+| **[A]** An ensemble of optimal individual base learners based on previous hyperparameter tuning evaluation was formulated as follows: 
+|      **[A.1]** Linear Discriminant Analysis
+|      **[A.2]** Classification and Regression Trees
+|             **[A.2.1]** <span style="color: #FF0000">cp</span> = 0.001
+|      **[A.3]** Support Vector Machine - Radial Basis Function Kernel 
+|             **[A.3.1]** <span style="color: #FF0000">sigma</span> = 0.17905
+|             **[A.3.2]** <span style="color: #FF0000">C</span> = 2048
+|      **[A.4]** K-Nearest Neighbors 
+|             **[A.4.1]** <span style="color: #FF0000">k</span> = 1
+|      **[A.5]** Naive Bayes 
+|             **[A.5.1]** <span style="color: #FF0000">fL</span> = 2
+|             **[A.5.2]** <span style="color: #FF0000">adjust</span> = FALSE
+|             **[A.5.3]** <span style="color: #FF0000">usekernel</span> = FALSE
+|
+| **[B]** Among pairs of base learners, no high correlation was observed.
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.6, warning=FALSE, message=FALSE}
+
+##################################
+# Consolidating the base learners
+# with optimal hyperparameters
+##################################
+set.seed(12345678)
+BAL_LIST <- caretList(x = MA_Train[,!names(MA_Train) %in% c("diagnosis")],
+                      y = MA_Train$diagnosis,
+                      trControl=RKFold_Control,
+                      metric="ROC",
+                      tuneList=list(
+                        BAL_LDA=caretModelSpec(method="lda", 
+                                               preProcess=c("center","scale")),
+                        BAL_CART=caretModelSpec(method="rpart", 
+                                                tuneGrid=data.frame(cp=0.001)),
+                        BAL_SVM_R=caretModelSpec(method="svmRadial",
+                                                 preProcess=c("center","scale"),
+                                                 tuneGrid=data.frame(C = 2048, sigma = 0.1790538)),
+                        BAL_KNN=caretModelSpec(method="knn",
+                                               preProcess=c("center","scale"),
+                                               tuneGrid=data.frame(k = 1)),
+                        BAL_NB=caretModelSpec(method="nb",
+                                               tuneGrid=data.frame(usekernel=FALSE,fL = 2,adjust = FALSE)))             
+                        )
+
+BAL_LIST
+
+##################################
+# Comparing the base learners
+# with optimal hyperparameters
+##################################
+BAL_LIST_RESAMPLES <- resamples(BAL_LIST)
+summary(BAL_LIST_RESAMPLES)
+dotplot(BAL_LIST_RESAMPLES)
+splom(BAL_LIST_RESAMPLES)
+
+##################################
+# Measuring the correlation among
+# base learners
+##################################
+(BAL_LIST_COR <- modelCor(resamples(BAL_LIST)))
+
+```
+
+</details>
+
+###  1.7.7 Meta-Learner Model Development using Logistic Regression (MEL_LR)
+|
+| [Logistic Regression](http://dx.doi.org/10.2139/ssrn.360300) models the relationship between the probability of an event (among two outcome levels) by having the log-odds of the event be a linear combination of a set of predictors weighted by their respective parameter estimates. The parameters are estimated via maximum likelihood estimation by testing different values through multiple iterations to optimize for the best fit of log odds. All of these iterations produce the log likelihood function, and logistic regression seeks to maximize this function to find the best parameter estimates. Given the optimal parameters, the conditional probabilities for each observation can be calculated, logged, and summed together to yield a predicted probability.
+|
+| **[A]** The logistic regression model from the  <mark style="background-color: #CCECFF">**stats**</mark> package was implemented on the optimal base learner ensemble through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model does not contain any hyperparameter.
+|
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration is fixed due to the absence of a hyperparameter
+|      **[C.2]** ROC Curve AUC = 0.96993
+|
+|
+| **[D]** The independent test model performance of the final model is summarized as follows:
+|      **[D.1]** ROC Curve AUC = 0.96613
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.7, warning=FALSE, message=FALSE}
+
+##################################
+# Formulating a stacked model
+# using the base learners
+# and a linear regression meta-model
+##################################
+set.seed(12345678)
+MEL_LR <- caretStack(BAL_LIST,
+                     metric="ROC",
+                     trControl=RKFold_Control,
+                     method="glm")
+print(MEL_LR)
+
+(MEL_LR_Train_AUROC <- MEL_LR$ens_model$results$ROC)
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MEL_LR_Test <- data.frame(MEL_LR_Test_Observed = MA_Test$diagnosis,
+                          MEL_LR_Test_Predicted = predict(MEL_LR,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")]))
+
+MEL_LR_Test
+
+#################################
+# Reporting the independent evaluation results
+# for the test set
+#################################
+MEL_LR_Test_ROC <- roc(response = MEL_LR_Test$MEL_LR_Test_Observed,
+                    predictor = MEL_LR_Test$MEL_LR_Test_Predicted.M,
+                    levels = rev(levels(MEL_LR_Test$MEL_LR_Test_Observed)))
+
+(MEL_LR_Test_AUROC <- auc(MEL_LR_Test_ROC)[1])
+
+```
+
+</details>
+
+###  1.7.8 Meta-Learner Model Development using Random Forest (MEL_RF)
+|
+| [Random Forest](https://link.springer.com/article/10.1023/A:1010933404324) is an ensemble learning method made up of a large set of small decision trees called estimators, with each producing its own prediction. The random forest model aggregates the predictions of the estimators to produce a more accurate prediction. The algorithm involves bootstrap aggregating (where smaller subsets of the training data are repeatedly subsampled with replacement), random subspacing (where a subset of features are sampled and used to train each individual estimator), estimator training (where unpruned decision trees are formulated for each estimator) and inference by aggregating the predictions of all estimators.
+|
+| **[A]** The random forest model from the  <mark style="background-color: #CCECFF">**randomForest**</mark> package was implemented optimal base learner ensemble through the <mark style="background-color: #CCECFF">**caret**</mark> package. 
+|
+| **[B]** The model contains 1 hyperparameter:
+|      **[B.1]** <span style="color: #FF0000">mtry</span> = number of randomly selected predictors made to vary across a range of values equal to 2 to 5
+|
+| **[C]** The 5-cycle repeated 5-fold cross-validated model performance of the final model is summarized as follows:
+|      **[C.1]** Final model configuration involves mtry=3
+|      **[C.2]** AUROC = 0.97611
+|
+| **[D]** The independent test model performance of the final model is summarized as follows:
+|      **[D.1]** AUROC = 0.96898
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.7.8, warning=FALSE, message=FALSE}
+
+##################################
+# Formulating a stacked model
+# using the base learners
+# and a random forest meta-model
+##################################
+set.seed(12345678)
+MEL_RF <- caretStack(BAL_LIST,
+                     metric="ROC",
+                     trControl=RKFold_Control,
+                     method="rf",
+                     tuneGrid = RF_Grid)
+print(MEL_RF)
+
+(MEL_RF_Train_AUROC <- max(MEL_RF$ens_model$results$ROC))
+
+##################################
+# Independently evaluating the model
+# on the test set
+##################################
+MEL_RF_Test <- data.frame(MEL_RF_Test_Observed = MA_Test$diagnosis,
+                          MEL_RF_Test_Predicted = predict(MEL_RF,
+                                                          MA_Test[,!names(MA_Test) %in% c("diagnosis")]))
+
+MEL_RF_Test
+
+#################################
+# Reporting the independent evaluation results
+# for the test set
+#################################
+MEL_RF_Test_ROC <- roc(response = MEL_RF_Test$MEL_RF_Test_Observed,
+                       predictor = MEL_RF_Test$MEL_RF_Test_Predicted.M,
+                       levels = rev(levels(MEL_RF_Test$MEL_RF_Test_Observed)))
+
+(MEL_RF_Test_AUROC <- auc(MEL_RF_Test_ROC)[1])
+
+```
+
+</details>
+
+##  1.8 Consolidated Findings
+|
+| **[A]** Models which are based on boosting and bagging algorithms demonstrated excellent cross-validated and test AUROC metrics:
+|      **[A.1]** **MBS_AB: Adaptive Boosting** (<mark style="background-color: #CCECFF">**adabag**</mark> package)
+|             **[A.1.1]** Cross-Validation AUROC = 0.97109
+|             **[A.1.2]** Test ROC Curve AUROC = 0.99564 
+|      **[A.2]** **MBS_GBM: Stochastic Gradient Boosting** (<mark style="background-color: #CCECFF">**gbm**</mark> package)
+|             **[A.2.1]** Cross-Validation AUROC = 0.96473
+|             **[A.2.2]** Test ROC Curve AUROC = 0.98306 
+|      **[A.3]** **MBS_XGB: Extreme Gradient Boosting** (<mark style="background-color: #CCECFF">**xgboost**</mark> package)
+|             **[A.3.1]** Cross-Validation AUROC = 0.96403
+|             **[A.3.2]** Test ROC Curve AUROC = 0.98977
+|      **[A.4]** **MBG_RF: Random Forest** (<mark style="background-color: #CCECFF">**randomForest**</mark> package)
+|             **[A.4.1]** Cross-Validation AUROC = 0.97000
+|             **[A.4.2]** Test ROC Curve AUROC = 0.99195
+|      **[A.5]** **MBG_BCART: Bagged Classification and Regression Trees** (<mark style="background-color: #CCECFF">**ipred**</mark>, <mark style="background-color: #CCECFF">**plyr**</mark> and <mark style="background-color: #CCECFF">**e1071**</mark> packages)
+|             **[A.5.1]** Cross-Validation AUROC = 0.96444
+|             **[A.5.2]** Test ROC Curve AUROC = 0.998583
+|
+| **[B]** Models implemented as base learners which are not based on boosting and bagging algorithms individually demonstrated inferior cross-validated and test AUROC metrics:
+|      **[B.1]** **BAL_LDA: Linear Discriminant Analysis** (<mark style="background-color: #CCECFF">**MASS**</mark> package)
+|             **[B.1.1]** Cross-Validation AUROC = 0.87628
+|             **[B.1.2]** Test ROC Curve AUROC = 0.88833 
+|      **[B.2]** **BAL_CART: Classification and Regression Trees** (<mark style="background-color: #CCECFF">**rpart**</mark> package)
+|             **[B.2.1]** Cross-Validation AUROC = 0.86145
+|             **[B.2.2]** Test ROC Curve AUROC = 0.92106 
+|      **[B.3]** **BAL_SVM_R: Support Vector Machine - Radial Basis Function Kernel** (<mark style="background-color: #CCECFF">**kernlab**</mark> package)
+|             **[B.3.1]** Cross-Validation AUROC = 0.90977
+|             **[B.3.2]** Test ROC Curve AUROC = 0.93762
+|      **[B.4]** **BAL_KNN: K-Nearest Neighbors** (<mark style="background-color: #CCECFF">**caret**</mark> package)
+|             **[B.4.1]** Cross-Validation AUROC = 0.90764
+|             **[B.4.2]** Test ROC Curve AUROC = 0.93611
+|      **[B.5]** **BAL_NB: Naive Bayes** (<mark style="background-color: #CCECFF">**klaR**</mark> package)
+|             **[B.5.1]** Cross-Validation AUROC = 0.88735
+|             **[B.5.2]** Test ROC Curve AUROC = 0.89696
+|
+| **[C]** The model stacking process demonstrated improved cross-validated and test AUROC metrics as compared to individual base learners:
+|      **[C.1]** **MEL_LR: Logistic Regression** (<mark style="background-color: #CCECFF">**stats**</mark> package)
+|             **[C.1.1]** Cross-Validation AUROC = 0.96993
+|             **[C.1.2]** Test ROC Curve AUROC = 0.96613
+|      **[C.2]** **MEL_RF: Classification and Regression Trees** (<mark style="background-color: #CCECFF">**randomForest**</mark> package)
+|             **[C.2.1]** Cross-Validation AUROC = 0.97611
+|             **[C.2.2]** Test ROC Curve AUROC = 0.96898
+|
+|
+
+<details><summary><mark style="background-color: #000000;color: #FFFFFF">**Code Chunk | Output**</mark></summary>
+
+```{r section_1.8, warning=FALSE, message=FALSE, dev='png'}
+
+##################################
+# Consolidating the resampling results
+# for the formulated individual models
+##################################
+(Consolidated_Resampling <- resamples(list(MBS_AB = MBS_AB_Tune,
+                                           MBS_GBM = MBS_GBM_Tune,
+                                           MBS_XGB = MBS_XGB_Tune,
+                                           MBG_RF = MBG_RF_Tune,
+                                           MBG_BCART = MBG_BCART_Tune,
+                                           BAL_LDA = BAL_LDA_Tune,
+                                           BAL_CART = BAL_CART_Tune,
+                                           BAL_KNN = BAL_KNN_Tune,
+                                           BAL_NB = BAL_NB_Tune)))
+
+summary(Consolidated_Resampling)
+
+##################################
+# Exploring the resampling results
+# for the formulated individual models
+##################################
+bwplot(Consolidated_Resampling,
+       main = "Model Resampling Performance Comparison (Range)",
+       ylab = "Model",
+       pch=16,
+       cex=2,
+       layout=c(3,1))
+
+##################################
+# Consolidating the train and test AUROC
+# for the formulated individual models
+# together with the ensemble and stacked models
+##################################
+
+Model <- c('MBS_AB','MBS_GBM','MBS_XGB',
+           'MBG_RF','MBG_BCART',
+           'BAL_LDA','BAL_CART','BAL_SVM_R','BAL_KNN','BAL_NB',
+           'MEL_LR','MEL_RF',
+           'MBS_AB','MBS_GBM','MBS_XGB',
+           'MBG_RF','MBG_BCART',
+           'BAL_LDA','BAL_CART','BAL_SVM_R','BAL_KNN','BAL_NB',
+           'MEL_LR','MEL_RF')
+
+Set <- c(rep('Cross-Validation',12),rep('Test',12))
+
+AUROC <- c(MBS_AB_Train_AUROC,MBS_GBM_Train_AUROC,MBS_XGB_Train_AUROC,
+           MBG_RF_Train_AUROC,MBG_BCART_Train_AUROC,
+           BAL_LDA_Train_AUROC,BAL_CART_Train_AUROC,BAL_SVM_R_Train_AUROC,BAL_KNN_Train_AUROC,BAL_NB_Train_AUROC,
+           MEL_LR_Train_AUROC,MEL_RF_Train_AUROC,
+           MBS_AB_Test_AUROC,MBS_GBM_Test_AUROC,MBS_XGB_Test_AUROC,
+           MBG_RF_Test_AUROC,MBG_BCART_Test_AUROC,
+           BAL_LDA_Test_AUROC,BAL_CART_Test_AUROC,BAL_SVM_R_Test_AUROC,BAL_KNN_Test_AUROC,BAL_NB_Test_AUROC,
+           MEL_LR_Test_AUROC,MEL_RF_Test_AUROC)
+
+AUROC_Summary <- as.data.frame(cbind(Model,Set,AUROC))
+
+AUROC_Summary$AUROC <- as.numeric(as.character(AUROC_Summary$AUROC))
+AUROC_Summary$Set <- factor(AUROC_Summary$Set,
+                            levels = c("Cross-Validation",
+                                       "Test"))
+AUROC_Summary$Model <- factor(AUROC_Summary$Model,
+                              levels = c('MBS_AB',
+                                         'MBS_GBM',
+                                         'MBS_XGB',
+                                         'MBG_RF',
+                                         'MBG_BCART',
+                                         'BAL_LDA',
+                                         'BAL_CART',
+                                         'BAL_SVM_R',
+                                         'BAL_KNN',
+                                         'BAL_NB',
+                                         'MEL_LR',
+                                         'MEL_RF'))
+
+print(AUROC_Summary, row.names=FALSE)
+
+(AUROC_Plot <- dotplot(Model ~ AUROC,
+                           data = AUROC_Summary,
+                           groups = Set,
+                           main = "Classification Model Performance Comparison",
+                           ylab = "Model",
+                           xlab = "AUROC",
+                           auto.key = list(adj=1, space="top", columns=2),
+                           type=c("p", "h"),
+                           origin = 0,
+                           alpha = 0.45,
+                           pch = 16,
+                           cex = 2))
+
+```
+
+</details>
+
+|
+# **2. Summary** <a name="summary"></a>
+|
+| ![](D:/Github_Codes/ProjectPortfolio/Portfolio_Project_38/images/Project38_Summary.png)
+|
+# **3. References**
+|
+| **[Book]** [Ensemble Methods for Machine Learning](https://www.manning.com/books/ensemble-methods-for-machine-learning) by Gautam Kunapuli
+| **[Book]** [Statistics and Machine Learning in Python](https://duchesnay.github.io/pystatsml/index.html) by Edouard Duchesnay, Tommy Lofstedt and Feki Younes
+| **[Book]** [Applied Predictive Modeling](http://appliedpredictivemodeling.com/) by Max Kuhn and Kjell Johnson
+| **[Book]** [An Introduction to Statistical Learning](https://www.statlearning.com/) by Gareth James, Daniela Witten, Trevor Hastie and Rob Tibshirani
+| **[Book]** [Multivariate Data Visualization with R](http://lmdvr.r-forge.r-project.org/figures/figures.html) by Deepayan Sarkar
+| **[Book]** [Machine Learning](https://bookdown.org/ssjackson300/Machine-Learning-Lecture-Notes/) by Samuel Jackson
+| **[Book]** [Data Modeling Methods](https://bookdown.org/larget_jacob/data-modeling-methods/) by Jacob Larget
+| **[Book]** [Introduction to R and Statistics](https://saestatsteaching.tech/) by University of Western Australia
+| **[Book]** [Feature Engineering and Selection: A Practical Approach for Predictive Models](http://www.feat.engineering/index.html) by Max Kuhn and Kjell Johnson
+| **[Book]** [Introduction to Research Methods](https://bookdown.org/ejvanholm/Textbook/) by Eric van Holm
+| **[R Package]** [AppliedPredictiveModeling](https://cran.r-project.org/web//packages/AppliedPredictiveModeling/AppliedPredictiveModeling.pdf) by Max Kuhn
+| **[R Package]** [caret](https://topepo.github.io/caret/index.html) by Max Kuhn
+| **[R Package]** [rpart](https://mran.microsoft.com/web/packages/rpart/rpart.pdf) by Terry Therneau and Beth Atkinson
+| **[R Package]** [lattice](https://cran.r-project.org/web/packages/lattice/lattice.pdf) by  Deepayan Sarkar
+| **[R Package]** [dplyr](https://cran.r-project.org/web/packages/dplyr/index.html/) by Hadley Wickham
+| **[R Package]** [tidyr](https://cran.r-project.org/web/packages/tidyr/tidyr.pdf) by Hadley Wickham
+| **[R Package]** [moments](https://cran.r-project.org/web/packages/moments/index.html) by Lukasz Komsta and Frederick
+| **[R Package]** [skimr](https://cran.r-project.org/web/packages/skimr/skimr.pdf) by  Elin Waring
+| **[R Package]** [RANN](https://cran.r-project.org/web/packages/RANN/RANN.pdf) by  Sunil Arya, David Mount, Samuel Kemp and Gregory Jefferis
+| **[R Package]** [corrplot](https://cran.r-project.org/web/packages/corrplot/corrplot.pdf) by Taiyun Wei
+| **[R Package]** [tidyverse](https://cran.r-project.org/web/packages/tidyverse/tidyverse.pdf) by Hadley Wickham
+| **[R Package]** [lares](https://cran.rstudio.com/web/packages/lares/lares.pdf) by Bernardo Lares
+| **[R Package]** [DMwR2](https://mran.microsoft.com/snapshot/2016-05-02/web/packages/DMwR/DMwR.pdf) by Luis Torgo
+| **[R Package]** [gridExtra](https://cran.r-project.org/web/packages/gridExtra/gridExtra.pdf) by Baptiste Auguie and Anton Antonov
+| **[R Package]** [rattle](https://cran.r-project.org/web/packages/rattle/rattle.pdf) by Graham Williams
+| **[R Package]** [RColorBrewer](https://cran.r-project.org/web//packages/RColorBrewer/RColorBrewer.pdf) by Erich Neuwirth
+| **[R Package]** [stats](https://search.r-project.org/R/refmans/stats/html/00Index.html) by R Core Team
+| **[R Package]** [caretEnsemble](https://cran.r-project.org/web/packages/caretEnsemble/caretEnsemble.pdf) by Zachary Deane-Mayer
+| **[R Package]** [pROC](https://cran.r-project.org/web/packages/pROC/pROC.pdf) by Xavier Robin
+| **[R Package]** [adabag](https://cran.r-project.org/web/packages/adabag/adabag.pdf) by Esteban Alfaro, Matias Gamez and Noelia Garcia
+| **[R Package]** [gbm](https://cran.r-project.org/web/packages/gbm/gbm.pdf) by Brandon Greenwell, Bradley Boehmke and Jay Cunningham 
+| **[R Package]** [xgboost](https://cran.r-project.org/web/packages/xgboost/xgboost.pdf) by Jiaming Yuan
+| **[R Package]** [randomForest](https://cran.r-project.org/web/packages/randomForest/randomForest.pdf) by Andy Liaw
+| **[R Package]** [kernlab](https://cran.r-project.org/web/packages/kernlab/kernlab.pdf) by Alexandros Karatzoglou
+| **[R Package]** [klaR](https://cran.r-project.org/web/packages/klaR/klaR.pdf) by Christian Roever, Nils Raabe, Karsten Luebke, Uwe Ligges, Gero Szepannek, Marc Zentgraf and David Meyer
+| **[R Package]** [rpart](https://mran.microsoft.com/web/packages/rpart/rpart.pdf) by Terry Therneau and Beth Atkinson
+| **[R Package]** [rpart.plot](https://cran.r-project.org/web/packages/rpart.plot/rpart.plot.pdf) by Stephen Milborrow
+| **[Article]** [A Brief Introduction to caretEnsemble](https://cran.r-project.org/web/packages/caretEnsemble/vignettes/caretEnsemble-intro.html) by Zachary Deane-Mayer
+| **[Article]** [A Gentle Introduction to Ensemble Learning Algorithms](https://machinelearningmastery.com/tour-of-ensemble-learning-algorithms/) by Jason Brownlee
+| **[Article]** [Ensemble Methods: Elegant Techniques to Produce Improved Machine Learning Results](https://www.toptal.com/machine-learning/ensemble-methods-machine-learning) by Necati Demir
+| **[Article]** [The Complete Guide to Ensemble Learning](https://www.v7labs.com/blog/ensemble-learning) by Rohit Kundu
+| **[Article]** [Develop an Intuition for How Ensemble Learning Works](https://machinelearningmastery.com/how-ensemble-learning-works/) by Jason Brownlee
+| **[Article]** [How to Build an Ensemble Of Machine Learning Algorithms in R](https://machinelearningmastery.com/machine-learning-ensembles-with-r/) by Jason Brownlee
+| **[Article]** [Ensemble Learning: Bagging, Boosting, and Stacking](https://towardsai.net/p/machine-learning/ensemble-learning-bagging-boosting-and-stacking) by Towards AI Team
+| **[Article]** [Bagging, Boosting, and Stacking in Machine Learning](https://www.baeldung.com/cs/bagging-boosting-stacking-ml-ensemble-models) by Emmanuella Budu
+| **[Article]** [Stacking Ensemble Machine Learning With Python](https://machinelearningmastery.com/stacking-ensemble-machine-learning-with-python/) by Jason Brownlee
+| **[Article]** [Essence of Boosting Ensembles for Machine Learning](https://machinelearningmastery.com/essence-of-boosting-ensembles-for-machine-learning/) by Jason Brownlee
+| **[Article]** [Ensemble Modeling with R](https://www.pluralsight.com/guides/ensemble-modeling-with-r) by Deepika Singh
+| **[Article]** [Creating Ensemble Models in R](https://dustinrogers.github.io/Ensemble-Models/) by Dustin Rogers
+| **[Article]** [Stacking Ensemble Machine Learning With Python](https://machinelearningmastery.com/stacking-ensemble-machine-learning-with-python/) by Jason Brownlee
+| **[Article]** [Stacking Machine Learning: Everything You Need to Know](https://www.machinelearningpro.org/stacking-machine-learning/) by Ada Parker
+| **[Article]** [Ensemble Learning: Bagging, Boosting and Stacking](https://duchesnay.github.io/pystatsml/machine_learning/ensemble_learning.html) by Edouard Duchesnay, Tommy Lofstedt and Feki Younes
+| **[Article]** [Stack Machine Learning Models: Get Better Results](https://developer.ibm.com/articles/stack-machine-learning-models-get-better-results/) by IBM Team
+| **[Article]** [Gradient Boosting vs AdaBoost vs XGBoost vs CatBoost vs LightGBM](https://www.geeksforgeeks.org/gradientboosting-vs-adaboost-vs-xgboost-vs-catboost-vs-lightgbm/) by Geeks for Geeks Team
+| **[Article]** [A Gentle Introduction to the Gradient Boosting Algorithm for Machine Learning](https://machinelearningmastery.com/gentle-introduction-gradient-boosting-algorithm-machine-learning/) by Jason Brownlee
+| **[Article]** [The Ultimate Guide to AdaBoost Algorithm | What is AdaBoost Algorithm?](https://www.mygreatlearning.com/blog/adaboost-algorithm/) by Ashish Kumar
+| **[Publication]** [Experiments with a New Boosting Algorithm](https://www.semanticscholar.org/paper/Experiments-with-a-New-Boosting-Algorithm-Freund-Schapire/68c1bfe375dde46777fe1ac8f3636fb651e3f0f8) by Yoav Freund and Robert Schapire (Proceedings of the Thirteenth International Conference on Machine Learning)
+| **[Publication]** [Stochastic Gradient Boosting](https://www.sciencedirect.com/science/article/abs/pii/S0167947301000652) by Jerome Friedman (Computational Statistics and Data Analysis)
+| **[Publication]** [XGBoost: A Scalable Tree Boosting System](https://arxiv.org/abs/1603.02754) by Tianqi Chen and Carlos Guestrin (22nd SIGKDD Conference on Knowledge Discovery and Data Mining)
+| **[Publication]** [Ensemble Selection from Libraries of Models](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.60.2859&rep=rep1&type=pdf) by Rich Caruana, Alexandru Niculescu-Mizil, Geoff Crew and Alex Ksikes (Proceedings of the 21 st International Conference on Machine Learning)
+| **[Publication]** [Random Forest](https://link.springer.com/article/10.1023/A:1010933404324) by Leo Breiman (Machine Learning)
+| **[Publication]** [Bagging Predictors](https://link.springer.com/article/10.1007/BF00058655) by Leo Breiman (Machine Learning)
+| **[Publication]** [The Use of Multiple Measurements in Taxonomic Problems](https://www.semanticscholar.org/paper/THE-USE-OF-MULTIPLE-MEASUREMENTS-IN-TAXONOMIC-Fisher/ab21376e43ac90a4eafd14f0f02a0c87502b6bbf) by Ronald Fisher (Annals of Human Genetics)
+| **[Publication]** [Classification and Regression Trees](https://www.semanticscholar.org/paper/Classification-and-Regression-Trees-Breiman-Friedman/8017699564136f93af21575810d557dba1ee6fc6) by Leo Breiman, Jerome Friedman, Richard Olshen, and Charles Stone (Computer Science)
+| **[Publication]** [A Training Algorithm for Optimal Margin Classifiers](https://dl.acm.org/doi/10.1145/130385.130401) by Bernhard Boser, Isabelle Guyon and Vladimir Vapnik (Proceedings of the Fifth Annual Workshop on Computational Learning Theory)
+| **[Publication]** [Nearest Neighbor Pattern Classification](https://ieeexplore.ieee.org/document/1053964) Thomas Cover and Peter Hart (IEEE Transactions on Information Theory)
+| **[Publication]** [Who Discovered Bayes's Theorem?](https://www.jstor.org/stable/2682766) by Stephen Stigler (The American Statistician)
+| **[Publication]** [The Origins of Logistic Regression](http://dx.doi.org/10.2139/ssrn.360300) by JS Cramer (Econometrics eJournal)
+| **[Course]** [Applied Data Mining and Statistical Learning](https://online.stat.psu.edu/stat508/) by Penn State Eberly College of Science
+|
+|
+|
+|
